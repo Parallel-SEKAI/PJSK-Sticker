@@ -716,35 +716,35 @@ class PjskGenerator {
       'rin9.png',
     ],
     'rui': [
-      '607.png',
-      '608.png',
-      '609.png',
-      '610.png',
-      '611.png',
-      '612.png',
-      '613.png',
-      '614.png',
-      '615.png',
-      '616.png',
-      '617.png',
-      '618.png',
-      '619.png',
-      '620.png',
-      '621.png',
-      '622.png',
-      '623.png',
-      '624.png',
-      '625.png',
-      '626.png',
-      '627.png',
-      '628.png',
-      '629.png',
-      '630.png',
-      '631.png',
-      '632.png',
-      '633.png',
-      '634.png',
-      '635.png',
+      'rui1.png',
+      'rui10.png',
+      'rui11.png',
+      'rui12.png',
+      'rui13.png',
+      'rui14.png',
+      'rui15.png',
+      'rui16.png',
+      'rui17.png',
+      'rui18.png',
+      'rui19.png',
+      'rui2.png',
+      'rui20.png',
+      'rui21.png',
+      'rui22.png',
+      'rui23.png',
+      'rui24.png',
+      'rui25.png',
+      'rui26.png',
+      'rui27.png',
+      'rui28.png',
+      'rui29.png',
+      'rui3.png',
+      'rui4.png',
+      'rui5.png',
+      'rui6.png',
+      'rui7.png',
+      'rui8.png',
+      'rui9.png',
     ],
     'saki': [
       'saki1.png',
@@ -1028,14 +1028,8 @@ class PjskGenerator {
     int? charNum = int.tryParse(charNumber);
     if (charNum == null ||
         charNum <= 0 ||
-        charNum > characterLen[characterName]! ||
-        charNum % 5 == 0) {
-      final validNumbers =
-          List.generate(
-            characterLen[characterName]!,
-            (i) => i + 1,
-          ).where((n) => n % 5 != 0).toList();
-      charNum = validNumbers[DateTime.now().millisecond % validNumbers.length];
+        charNum > characterLen[characterName]!) {
+      charNum = DateTime.now().millisecond % characterLen[characterName]! + 1;
     }
 
     final charPath =

@@ -106,7 +106,7 @@ class _AboutPageState extends State<AboutPage> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min, // 仅占必要宽度
               children: [
-                Text("1.1.1"), // 原文字
+                Text("1.1.2"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
                   Ionicons.chevron_forward, // 箭头图标
