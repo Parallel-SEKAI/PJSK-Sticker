@@ -1,4 +1,4 @@
-package com.yurira.pjsk_sticker
+package org.parallel_sekai.pjsk_sticker
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -5,6 +5,7 @@ import java.io.FileInputStream
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -17,7 +18,7 @@ val keystoreProperties = Properties().apply {
 }
 
 android {
-    namespace = "com.yurira.pjsk_sticker"
+    namespace = "org.parallel_sekai.pjsk_sticker"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -31,7 +32,10 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.yurira.pjsk_sticker"
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "org.parallel_sekai.pjsk_sticker"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -53,11 +57,17 @@ android {
     // 构建类型（Kotlin语法）
     buildTypes {
         getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
+            // 只有在签名配置有效的情况下才使用它
+            signingConfig = if (signingConfigs["release"]?.keyAlias != null && 
+                               signingConfigs["release"]?.storeFile != null) {
+                signingConfigs["release"]
+            } else {
+                null
+            }
         }
     }
 }
 
 flutter {
-    source = "../.."  // 直接使用字符串路径，解决类型不匹配
+    source = "../.."
 }

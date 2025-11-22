@@ -1,6 +1,6 @@
 {
-    "name": "pjsk_sticker",
-    "short_name": "pjsk_sticker",
+    "name": "PJSK Sticker",
+    "short_name": "PJSK Sticker",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#D481A9",

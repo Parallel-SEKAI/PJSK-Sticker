@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.yurira" "\0"
+            VALUE "CompanyName", "org.parallel_sekai" "\0"
             VALUE "FileDescription", "pjsk_sticker" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "pjsk_sticker" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.yurira. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 org.parallel_sekai. All rights reserved." "\0"
             VALUE "OriginalFilename", "pjsk_sticker.exe" "\0"
             VALUE "ProductName", "pjsk_sticker" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

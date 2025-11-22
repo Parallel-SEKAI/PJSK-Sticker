@@ -8,7 +8,7 @@
 PRODUCT_NAME = pjsk_sticker
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.yurira.pjskSticker
+PRODUCT_BUNDLE_IDENTIFIER = org.parallelsekai.pjskSticker
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 com.yurira. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 org.parallel_sekai. All rights reserved.
