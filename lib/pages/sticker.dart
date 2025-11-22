@@ -17,6 +17,9 @@ class StickerPage extends StatefulWidget {
 }
 
 class _StickerPageState extends State<StickerPage> {
+  static final Uri _apiBaseUrl = Uri.parse(
+    "https://api.parallel-sekai.org/pjsk-sticker",
+  );
   final TextEditingController _contextController = TextEditingController(
     text: "わんだほーい",
   );
@@ -31,6 +34,7 @@ class _StickerPageState extends State<StickerPage> {
   double _fontSize = 42;
   int _edgeSize = 4;
   double _lean = 15;
+  String _uri = "";
   // int _time = 0;
 
   @override
@@ -78,10 +82,139 @@ class _StickerPageState extends State<StickerPage> {
     await prefs.setDouble('lean', _lean);
   }
 
+  Uri _saveAsUri() {
+    final Map<String, dynamic> queryParameters = {
+      'character': _character,
+      'text': _contextController.text,
+      'font_size': _fontSize.round().toString(),
+      'stroke_width': _edgeSize.toString(),
+      'rotation_angle': _lean.round().toString(),
+    };
+
+    if (_selectedSticker != -1) {
+      queryParameters['character_index'] = _selectedSticker.toString();
+    }
+    // position is a repeated parameter, so we need to add it separately
+    final List<String> positionList = [
+      _pos.dx.round().toString(),
+      _pos.dy.round().toString(),
+    ];
+
+    // font_path is derived from _font index
+    if (_font >= 0 && _font < PjskGenerator.fonts.length) {
+      queryParameters['font_path'] = PjskGenerator.fonts[_font];
+    }
+
+    // Build URI with all parameters
+    final Uri uri = _apiBaseUrl.replace(
+      queryParameters: {
+        ...queryParameters.map((key, value) => MapEntry(key, value.toString())),
+        'position': positionList,
+      },
+    );
+
+    return uri;
+  }
+
+  void _reloadFromUri(Uri uri) async {
+    final Map<String, List<String>> queryParams = uri.queryParametersAll;
+    setState(() {
+      _contextController.text =
+          queryParams['text']?.first ?? _contextController.text;
+      _character = queryParams['character']?.first ?? _character;
+      _selectedSticker =
+          int.tryParse(queryParams['character_index']?.first ?? '') ??
+          _selectedSticker;
+
+      final List<String>? positions = queryParams['position'];
+      if (positions != null && positions.length == 2) {
+        _pos = Offset(
+          double.tryParse(positions[0]) ?? _pos.dx,
+          double.tryParse(positions[1]) ?? _pos.dy,
+        );
+      }
+
+      _fontSize =
+          double.tryParse(queryParams['font_size']?.first ?? '') ?? _fontSize;
+      _edgeSize =
+          int.tryParse(queryParams['stroke_width']?.first ?? '') ?? _edgeSize;
+      _lean =
+          double.tryParse(queryParams['rotation_angle']?.first ?? '') ?? _lean;
+
+      final String? fontPath = queryParams['font_path']?.first;
+      if (fontPath != null) {
+        final int fontIndex = PjskGenerator.fonts.indexOf(fontPath);
+        if (fontIndex != -1) {
+          _font = fontIndex;
+        }
+      }
+    });
+    _createSticker();
+  }
+
+  Future<void> _exportImportConfig() async {
+    if (mounted) {
+      final TextEditingController configController = TextEditingController(
+        text: _saveAsUri().toString(),
+      );
+      showAdaptiveDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("导出/导入配置"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("导出图片请直接点击图片，点击下方按钮导出配置，或粘贴配置后点击导入"),
+                SizedBox(height: 8),
+                TextField(
+                  controller: configController,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText: "粘贴配置内容…",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  configController.text = _saveAsUri().toString();
+                },
+                child: Text("导出"),
+              ),
+              TextButton(
+                onPressed: () {
+                  final String text = configController.text.trim();
+                  if (text.isNotEmpty) {
+                    try {
+                      final Uri uri = Uri.parse(text);
+                      Navigator.pop(context);
+                      _reloadFromUri(uri);
+                    } catch (_) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text("配置格式错误")));
+                    }
+                  }
+                },
+                child: Text("导入"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("取消"),
+              ),
+            ],
+          );
+        },
+      );}
+  }
+
   Future<void> _createSticker() async {
     // 先保存参数
     await _savePreferences();
-    
+
     String content = _contextController.text;
     String character = _character != "随机" ? _character : "";
     if (PjskGenerator.groups.contains(character)) {
@@ -298,7 +431,7 @@ class _StickerPageState extends State<StickerPage> {
                       int.tryParse(
                         PjskGenerator.characterStickers[name]![index]
                             .replaceAll(name, '') // 移除角色名称部分
-                            .split('.')[0],       // 获取数字部分
+                            .split('.')[0], // 获取数字部分
                       )!; // 贴纸索引
                   // 判断文件是否存在
                   return InkWell(
@@ -350,6 +483,7 @@ class _StickerPageState extends State<StickerPage> {
       ),
       body: ListView(
         children: [
+          ListTile(title: Text("导出/导入配置"), onTap: _exportImportConfig),
           ListTile(
             title: TextField(
               controller: _contextController,
