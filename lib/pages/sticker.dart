@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:pjsk_sticker/pages/about.dart';
@@ -17,8 +19,12 @@ class StickerPage extends StatefulWidget {
 }
 
 class _StickerPageState extends State<StickerPage> {
-  static final Uri _apiBaseUrl = Uri.parse(
+  static final Uri apiBaseUrl = Uri.parse(
     "https://api.parallel-sekai.org/pjsk-sticker",
+  );
+  final RegExp urlReg = RegExp(
+    apiBaseUrl.toString() + r"[\w\-._~:/?#[\]@!$&\'()*+,;=%]+",
+    caseSensitive: false,
   );
   final TextEditingController _contextController = TextEditingController(
     text: "わんだほーい",
@@ -34,7 +40,8 @@ class _StickerPageState extends State<StickerPage> {
   double _fontSize = 42;
   int _edgeSize = 4;
   double _lean = 15;
-  String _uri = "";
+  bool _moreSettingsEnabled = false;
+  Color _moreSettingsColor = Color(0xFFDDAACC);
   // int _time = 0;
 
   @override
@@ -99,6 +106,11 @@ class _StickerPageState extends State<StickerPage> {
       _pos.dx.round().toString(),
       _pos.dy.round().toString(),
     ];
+    final List<String> textColorList = [
+      (_moreSettingsColor.r * 256.0).floor().toString(),
+      (_moreSettingsColor.g * 256.0).floor().toString(),
+      (_moreSettingsColor.b * 256.0).floor().toString(),
+    ];
 
     // font_path is derived from _font index
     if (_font >= 0 && _font < PjskGenerator.fonts.length) {
@@ -106,10 +118,11 @@ class _StickerPageState extends State<StickerPage> {
     }
 
     // Build URI with all parameters
-    final Uri uri = _apiBaseUrl.replace(
+    final Uri uri = apiBaseUrl.replace(
       queryParameters: {
         ...queryParameters.map((key, value) => MapEntry(key, value.toString())),
         'position': positionList,
+        if (_moreSettingsEnabled) 'text_color': textColorList,
       },
     );
 
@@ -140,6 +153,19 @@ class _StickerPageState extends State<StickerPage> {
           int.tryParse(queryParams['stroke_width']?.first ?? '') ?? _edgeSize;
       _lean =
           double.tryParse(queryParams['rotation_angle']?.first ?? '') ?? _lean;
+
+      final List<String>? textColor = queryParams['text_color'];
+      if (textColor != null && textColor.length == 3) {
+        _moreSettingsEnabled = true;
+        _moreSettingsColor = Color.fromARGB(
+          255,
+          int.tryParse(textColor[0]) ?? (_moreSettingsColor.r * 256.0).floor(),
+          int.tryParse(textColor[1]) ?? (_moreSettingsColor.g * 256.0).floor(),
+          int.tryParse(textColor[2]) ?? (_moreSettingsColor.b * 256.0).floor(),
+        );
+      } else {
+        _moreSettingsEnabled = false;
+      }
 
       final String? fontPath = queryParams['font_path']?.first;
       if (fontPath != null) {
@@ -178,11 +204,44 @@ class _StickerPageState extends State<StickerPage> {
               ],
             ),
             actions: [
+              if (Platform.isAndroid)
+                TextButton(
+                  onPressed: () async {
+                    await SharePlus.instance.share(
+                      ShareParams(
+                        text:
+                            '分享表情包: ${configController.text}\n使用 https://github.com/Parallel-SEKAI/PJSK-Sticker/ 制作',
+                        title: "分享 PJSK Sticker 配置",
+                      ),
+                    );
+                  },
+                  child: Text("分享"),
+                ),
               TextButton(
                 onPressed: () {
                   configController.text = _saveAsUri().toString();
+                  Clipboard.setData(ClipboardData(text: configController.text));
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("已复制")));
                 },
-                child: Text("导出"),
+                child: Text("复制"),
+              ),
+              TextButton(
+                onPressed: () async {
+                  // 使用正则表达式从剪贴板文本中提取第一个合法的 URL
+                  final ClipboardData? raw = await Clipboard.getData(
+                    Clipboard.kTextPlain,
+                  );
+                  final String? text = raw?.text;
+                  if (text != null) {
+                    final match = urlReg.firstMatch(text);
+                    if (match != null) {
+                      configController.text = match.group(0)!;
+                    }
+                  }
+                },
+                child: Text("粘贴"),
               ),
               TextButton(
                 onPressed: () {
@@ -201,14 +260,15 @@ class _StickerPageState extends State<StickerPage> {
                 },
                 child: Text("导入"),
               ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("取消"),
-              ),
+              // TextButton(
+              //   onPressed: () => Navigator.pop(context),
+              //   child: Text("取消"),
+              // ),
             ],
           );
         },
-      );}
+      );
+    }
   }
 
   Future<void> _createSticker() async {
@@ -235,6 +295,7 @@ class _StickerPageState extends State<StickerPage> {
       fontSize: _fontSize,
       edgeSize: _edgeSize,
       lean: _lean,
+      color: _moreSettingsEnabled ? _moreSettingsColor : null,
     );
 
     // _time++;
@@ -453,6 +514,88 @@ class _StickerPageState extends State<StickerPage> {
                     ),
                   );
                 },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _moreSettings() async {
+    Color _selectedColor = _moreSettingsColor;
+    await showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return ListView(
+          children: [
+            ListTile(
+              title: Text('更多设置'),
+              onTap: () {
+                setState(() {
+                  _moreSettingsEnabled = !_moreSettingsEnabled;
+                });
+                _createSticker();
+                Navigator.pop(context);
+              },
+              trailing: Switch(
+                value: _moreSettingsEnabled,
+                onChanged: (value) {
+                  setState(() {
+                    _moreSettingsEnabled = value;
+                  });
+                  _createSticker();
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            ListTile(
+              title: Text('设置颜色'),
+              onTap: () {
+                Navigator.pop(context);
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => AlertDialog(
+                        title: const Text('选择颜色'),
+                        content: SingleChildScrollView(
+                          child: ColorPicker(
+                            pickerColor: _selectedColor,
+                            enableAlpha: false,
+                            onColorChanged: (color) {
+                              setState(() => _selectedColor = color);
+                            },
+                            pickerAreaHeightPercent: 0.8,
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('取消'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _moreSettingsEnabled = true;
+                                _moreSettingsColor = _selectedColor;
+                              });
+                              _createSticker();
+                              Navigator.pop(context);
+                            },
+                            child: const Text('确定'),
+                          ),
+                        ],
+                      ),
+                );
+              },
+              trailing: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  color: _moreSettingsColor,
+                  // child: Text('#${_moreSettingsColor.toString()}'),
+                ),
               ),
             ),
           ],
@@ -740,6 +883,7 @@ class _StickerPageState extends State<StickerPage> {
               },
             ),
           ),
+          ListTile(title: Text('更多设置'), onTap: _moreSettings),
           if (_byteData != null)
             ListTile(
               title: Image.memory(

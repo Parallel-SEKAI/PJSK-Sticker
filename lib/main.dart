@@ -40,9 +40,9 @@ class MyApp extends StatelessWidget {
           lightColorScheme = lightDynamic.harmonized();
           darkColorScheme = darkDynamic.harmonized();
         } else {
-          lightColorScheme = ColorScheme.fromSeed(seedColor: Color(0xFF39C5BB));
+          lightColorScheme = ColorScheme.fromSeed(seedColor: Color(0xFFDDAACC));
           darkColorScheme = ColorScheme.fromSeed(
-            seedColor: Color(0xFF39C5BB),
+            seedColor: Color(0xFFDDAACC),
             brightness: Brightness.dark,
           );
         }

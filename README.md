@@ -25,6 +25,7 @@ _一个PJSK表情包生成器_
 
 - [Android/Windows 下载](https://github.com/xiaocaoooo/pjsk-sticker/releases)
 - 最新 Android APK 可以从 [GitHub Actions](https://github.com/xiaocaoooo/pjsk-sticker/actions/workflows/android.yml) 下载 (不稳定)
+- 最新 Windows 可执行文件可以从 [GitHub Actions](https://github.com/xiaocaoooo/pjsk-sticker/actions/workflows/windows.yml) 下载 (不稳定)
 
 ## 致谢
 

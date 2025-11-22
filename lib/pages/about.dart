@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -106,7 +108,7 @@ class _AboutPageState extends State<AboutPage> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min, // 仅占必要宽度
               children: [
-                Text("1.1.2"), // 原文字
+                Text("1.2.0"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
                   Ionicons.chevron_forward, // 箭头图标
@@ -117,7 +119,7 @@ class _AboutPageState extends State<AboutPage> {
             onTap: () {
               toUris([
                 Uri.parse(
-                  "https://github.com/xiaocaoooo/pjsk-sticker/releases/",
+                  "https://github.com/Parallel-SEKAI/PJSK-Sticker/releases/",
                 ),
               ]);
             },
@@ -127,7 +129,7 @@ class _AboutPageState extends State<AboutPage> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min, // 仅占必要宽度
               children: [
-                Text("xiaocaoooo"), // 原文字
+                Text("Parallel-SEKAI Team"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
                   Ionicons.chevron_forward, // 箭头图标
@@ -136,7 +138,7 @@ class _AboutPageState extends State<AboutPage> {
               ],
             ),
             onTap: () {
-              toUris([Uri.parse("https://github.com/xiaocaoooo/")]);
+              toUris([Uri.parse("https://github.com/Parallel-SEKAI/")]);
             },
           ),
           ListTile(
@@ -144,7 +146,7 @@ class _AboutPageState extends State<AboutPage> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min, // 仅占必要宽度
               children: [
-                Text("xiaocaoooo/pjsk-sticker"), // 原文字
+                Text("Parallel-SEKAI/PJSK-Sticker"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
                   Ionicons.chevron_forward, // 箭头图标
@@ -154,7 +156,7 @@ class _AboutPageState extends State<AboutPage> {
             ),
             onTap: () {
               toUris([
-                Uri.parse("https://github.com/xiaocaoooo/pjsk-sticker/"),
+                Uri.parse("https://github.com/Parallel-SEKAI/PJSK-Sticker/"),
               ]);
             },
           ),
@@ -184,6 +186,70 @@ class _AboutPageState extends State<AboutPage> {
                   ...qqurls.map((url) => Uri.parse(url)),
                 ], message: qq);
               }
+            },
+          ),
+          const Divider(),
+          ListTile(
+            title: Text(
+              "赞赏",
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ),
+          ),
+          ListTile(
+            title: Text("微信赞赏码"),
+            trailing: Icon(
+              Ionicons.chevron_forward, // 箭头图标
+              size: 18, // 图标大小（略小于默认，更协调）透明效果
+            ),
+            onTap: () {
+              showAdaptiveDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text("微信赞赏码"),
+                    content: Image.asset(
+                      "assets/wechat.png",
+                      width: 200,
+                      height: 200,
+                    ),
+                    actions: [
+                      if (Platform.isAndroid)
+                        TextButton(
+                          onPressed: () async {
+                            final File file = File(
+                              '/storage/emulated/0/Pictures/wechat.png',
+                            );
+                            file.writeAsBytesSync(
+                              (await rootBundle.load("assets/wechat.png")).buffer.asUint8List(),
+                            );
+                            ScaffoldMessenger.of(
+                              context,
+                            ).showSnackBar(SnackBar(content: Text("已保存到 Pictures/wechat.png")));
+                          },
+                          child: Text("保存"),
+                        ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text("关闭"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+          ListTile(
+            title: Text("爱发电"),
+            trailing: Icon(
+              Ionicons.chevron_forward, // 箭头图标
+              size: 18, // 图标大小（略小于默认，更协调）透明效果
+            ),
+            onTap: () {
+              toUris([Uri.parse("https://afdian.com/a/Parallel-SEKAI")]);
             },
           ),
           const Divider(),
