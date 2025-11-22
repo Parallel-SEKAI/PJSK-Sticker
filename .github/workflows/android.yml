@@ -1,40 +1,31 @@
 name: Flutter Android ABI Split Build
-
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
-
+    branches: [main]
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v3
-      
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
           cache: gradle
-      
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3'
-          channel: 'stable'
-      
+          flutter-version: "3.29.3"
+          channel: "stable"
       - name: Get dependencies
         run: flutter pub get
-      
       - name: Run tests
         run: flutter test
-      
       - name: Build split ABI APKs
         run: flutter build apk --split-per-abi --debug
-      
       - name: Upload split APKs
         uses: actions/upload-artifact@v4
         with:
