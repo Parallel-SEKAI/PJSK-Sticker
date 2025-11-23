@@ -1,0 +1,125 @@
+name: Flutter Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    paths:
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'android/**'
+
+jobs:
+  build:
+    name: Build Flutter ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: Android
+          - os: windows-latest
+            platform: Windows
+    
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.29.3'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create Android Keystore (key.jks)
+        if: matrix.platform == 'Android'
+        run: |
+          mkdir -p android/app
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+
+      - name: Create Android Key Properties (key.properties)
+        if: matrix.platform == 'Android'
+        run: |
+          mkdir -p android
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=app/key.jks" >> android/key.properties
+        env:
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+
+      - name: Build Android APKs (Split per ABI)
+        if: matrix.platform == 'Android'
+        run: flutter build apk --release --split-per-abi
+
+      - name: Build Windows executable
+        if: matrix.platform == 'Windows'
+        run: flutter build windows --release
+
+      - name: Archive Windows build artifact
+        if: matrix.platform == 'Windows'
+        run: |
+          Compress-Archive -Path build/windows/runner/Release -DestinationPath ${{ github.workspace }}/windows-release.zip
+        shell: pwsh
+
+      - name: Upload Android APK artifacts
+        if: matrix.platform == 'Android'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apks
+          path: build/app/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - name: Upload Windows build artifact
+        if: matrix.platform == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: windows-release.zip
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-artifacts
+          merge-multiple: true
+
+      - name: Determine if prerelease
+        id: pre
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == *"-rc"* ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          name: PJSK Sticker ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          prerelease: ${{ steps.pre.outputs.is_prerelease }}
+          files: build-artifacts/*
