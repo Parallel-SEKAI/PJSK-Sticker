@@ -73,7 +73,7 @@ jobs:
       - name: Archive Windows build artifact
         if: matrix.platform == 'Windows'
         run: |
-          Compress-Archive -Path build/windows/runner/Release -DestinationPath ${{ github.workspace }}/windows-release.zip
+          Compress-Archive -Path build/windows/x64/runner/Release -DestinationPath ${{ github.workspace }}/windows-release.zip
         shell: pwsh
 
       - name: Upload Android APK artifacts
