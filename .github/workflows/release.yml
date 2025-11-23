@@ -41,26 +41,21 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Create Android Keystore (key.jks)
-        if: matrix.platform == 'Android'
-        run: |
-          mkdir -p android/app
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      # TODO: 实现签名
+      # - name: Create Android Keystore (key.jks)
+      #   if: matrix.platform == 'Android'
+      #   run: |
+      #     mkdir -p android/app
+      #     echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
 
-      - name: Create Android Key Properties (key.properties)
-        if: matrix.platform == 'Android'
-        run: |
-          mkdir -p android
-          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=app/key.jks" >> android/key.properties
-        env:
-          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      # - name: Create Android Key Properties (key.properties)
+      #   if: matrix.platform == 'Android'
+      #   run: |
+      #     mkdir -p android
+      #     echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
+      #     echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+      #     echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+      #     echo "storeFile=app/key.jks" >> android/key.properties
 
       - name: Build Android APKs (Split per ABI)
         if: matrix.platform == 'Android'

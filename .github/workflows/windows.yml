@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [main]
 jobs:
-  build-android:
+  build-windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
