@@ -24,6 +24,15 @@ jobs:
         run: flutter pub get
       - name: Run tests
         run: flutter test
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release-keystore.jks
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=release-keystore.jks" >> android/key.properties
       - name: Build split ABI APKs
         run: flutter build apk --split-per-abi
       - name: Upload split APKs
