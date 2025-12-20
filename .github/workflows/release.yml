@@ -3,12 +3,7 @@ name: Flutter Build and Release
 on:
   push:
     tags:
-      - 'v*'
-    paths:
-      - 'lib/**'
-      - 'pubspec.yaml'
-      - 'pubspec.lock'
-      - 'android/**'
+      - "v*"
 
 jobs:
   build:
@@ -20,9 +15,11 @@ jobs:
         include:
           - os: ubuntu-latest
             platform: Android
+          - os: ubuntu-latest  # 新增：在 Ubuntu 上编译 Linux
+            platform: Linux
           - os: windows-latest
             platform: Windows
-    
+
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -35,29 +32,35 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
-          flutter-version: '3.29.3'
+          channel: "stable"
+          flutter-version: "3.29.3"
+
+      # 仅在编译 Linux 时安装必要的系统库
+      - name: Install Linux dependencies
+        if: matrix.platform == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y devscripts libgtk-3-dev libblkid-dev liblzma-dev libgcrypt20-dev
 
       - name: Install dependencies
         run: flutter pub get
 
-      # TODO: 实现签名
-      # - name: Create Android Keystore (key.jks)
-      #   if: matrix.platform == 'Android'
-      #   run: |
-      #     mkdir -p android/app
-      #     echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
+      # Android 专属步骤：解码 Keystore
+      - name: Decode Keystore
+        if: matrix.platform == 'Android'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release-keystore.jks
 
-      # - name: Create Android Key Properties (key.properties)
-      #   if: matrix.platform == 'Android'
-      #   run: |
-      #     mkdir -p android
-      #     echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
-      #     echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
-      #     echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-      #     echo "storeFile=app/key.jks" >> android/key.properties
+      - name: Create key.properties
+        if: matrix.platform == 'Android'
+        run: |
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=release-keystore.jks" >> android/key.properties
 
-      - name: Build Android APKs (Split per ABI)
+      # 编译步骤
+      - name: Build Android APKs
         if: matrix.platform == 'Android'
         run: flutter build apk --release --split-per-abi
 
@@ -65,27 +68,44 @@ jobs:
         if: matrix.platform == 'Windows'
         run: flutter build windows --release
 
+      - name: Build Linux executable
+        if: matrix.platform == 'Linux'
+        run: flutter build linux --release
+
+      # 打包压缩步骤
       - name: Archive Windows build artifact
         if: matrix.platform == 'Windows'
         run: |
           Compress-Archive -Path build/windows/x64/runner/Release -DestinationPath ${{ github.workspace }}/windows-release.zip
         shell: pwsh
 
+      - name: Archive Linux build artifact
+        if: matrix.platform == 'Linux'
+        run: |
+          cd build/linux/x64/release/bundle
+          tar -czvf ${{ github.workspace }}/linux-release.tar.gz .
+
+      # 上传 Artifacts
       - name: Upload Android APK artifacts
         if: matrix.platform == 'Android'
         uses: actions/upload-artifact@v4
         with:
           name: android-apks
           path: build/app/outputs/apk/release/*.apk
-          if-no-files-found: error
 
-      - name: Upload Windows build artifact
+      - name: Upload Windows artifact
         if: matrix.platform == 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: windows-release
           path: windows-release.zip
-          if-no-files-found: error
+
+      - name: Upload Linux artifact
+        if: matrix.platform == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: linux-release.tar.gz
 
   release:
     name: Create GitHub Release
