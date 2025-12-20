@@ -11,14 +11,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        platform: [Android, Linux, Windows]
         include:
-          - os: ubuntu-latest
-            platform: Android
-          - os: ubuntu-latest  # 新增：在 Ubuntu 上编译 Linux
-            platform: Linux
-          - os: windows-latest
-            platform: Windows
+          - platform: Android
+            os: ubuntu-latest
+          - platform: Linux
+            os: ubuntu-latest
+          - platform: Windows
+            os: windows-latest
 
     runs-on: ${{ matrix.os }}
     defaults:
