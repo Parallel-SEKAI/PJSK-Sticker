@@ -7,6 +7,6 @@ void main() {
     await tester.pumpWidget(const MyApp());
 
     // 验证初始界面是否显示预期的标题（替换为你的实际UI文本）
-    expect(find.text('Project Sekai Sticker'), findsOneWidget);
+    expect(find.text('PJSK Sticker'), findsOneWidget);
   });
 }
