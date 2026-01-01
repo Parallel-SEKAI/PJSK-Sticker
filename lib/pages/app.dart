@@ -52,9 +52,7 @@ class _AppPageState extends State<AppPage> {
         }
       });
       // 标记为已启动过
-      print("首次启动a");
       await _prefs.setBool('first_launch', false);
-      print("首次启动b");
     }
   }
 
