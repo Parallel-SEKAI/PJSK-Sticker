@@ -35,7 +35,7 @@ jobs:
       - name: Build AppImage
         run: |
           sudo apt-get install -y libfuse2
-          convert assets/icon.png -resize 256x256! icon_fixed.png
+          convert assets/icon.png -resize 256x256! pjsk_sticker.png
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
           mkdir -p AppDir/usr/bin
@@ -46,7 +46,7 @@ jobs:
           Icon=pjsk_sticker
           Type=Application
           Categories=Utility;" > pjsk_sticker.desktop
-          ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run --appdir AppDir -i icon_fixed.png -d pjsk_sticker.desktop --output appimage
+          ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run --appdir AppDir -i pjsk_sticker.png -d pjsk_sticker.desktop --output appimage
       - name: Upload linux bundle
         uses: actions/upload-artifact@v4
         with:
