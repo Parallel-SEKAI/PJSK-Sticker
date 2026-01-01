@@ -23,7 +23,7 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y devscripts libgtk-3-dev libblkid-dev liblzma-dev libgcrypt20-dev
+          sudo apt-get install -y devscripts libgtk-3-dev libblkid-dev liblzma-dev libgcrypt20-dev imagemagick
       - name: Get dependencies
         run: flutter pub get
       - name: Run analyzer
@@ -31,9 +31,29 @@ jobs:
       - name: Run tests
         run: flutter test
       - name: Build linux
-        run: flutter build linux
-      - name: Upload linux
+        run: flutter build linux --release
+      - name: Build AppImage
+        run: |
+          sudo apt-get install -y libfuse2
+          convert assets/icon.png -resize 256x256! pjsk_sticker.png
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+          mkdir -p AppDir/usr/bin
+          cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
+          echo "[Desktop Entry]
+          Name=PJSK Sticker
+          Exec=pjsk_sticker
+          Icon=pjsk_sticker
+          Type=Application
+          Categories=Utility;" > pjsk_sticker.desktop
+          ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run --appdir AppDir -i pjsk_sticker.png -d pjsk_sticker.desktop --output appimage
+      - name: Upload linux bundle
         uses: actions/upload-artifact@v4
         with:
-          name: linux
+          name: linux-bundle
           path: build/linux/x64/release/bundle/*
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: PJSK_Sticker-AppImage
+          path: "*.AppImage"
