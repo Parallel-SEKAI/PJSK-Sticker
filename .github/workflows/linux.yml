@@ -26,6 +26,8 @@ jobs:
           sudo apt-get install -y devscripts libgtk-3-dev libblkid-dev liblzma-dev libgcrypt20-dev
       - name: Get dependencies
         run: flutter pub get
+      - name: Run analyzer
+        run: flutter analyze
       - name: Run tests
         run: flutter test
       - name: Build linux
