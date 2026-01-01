@@ -1,7 +1,5 @@
-import "dart:math";
-import "dart:ui" as ui;
-import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+import "package:pjsk_sticker/image_text_overlay.dart";
 
 class PjskGenerator {
   static final List<String> groups = [
@@ -1006,7 +1004,6 @@ class PjskGenerator {
     int edgeSize = 4,
     int font = 1,
     Color? color,
-    // String? fileName,
   }) async {
     // fileName ??= "pjsk_${DateTime.now().millisecondsSinceEpoch}.png";
     // fileName ??= "pjsk.png";
@@ -1035,155 +1032,32 @@ class PjskGenerator {
     final charPath =
         "assets/characters/$characterName/$characterName$charNum.png";
 
-    // 创建临时目录
-    // final tempDir = await getTemporaryDirectory();
-    // final outputFile = File("${tempDir.path}/$fileName");
-
-    // 加载背景图片
-    final bgImage = await _loadImage(charPath);
+    // 加载背景图片字节数据
+    final bgImageData = await rootBundle.load(charPath);
+    final Uint8List bgImageBytes = bgImageData.buffer.asUint8List();
 
     Color fontColor = color ?? characterColor[characterName]!;
     // if (characterName == "miku" && charNum == 16) {
     //   fontColor = groupColor["25時,ナイトコードで."]!;
     // }
 
-    // 生成文本图片
-    final textPainter = await _createTextPainter(
+    // 加载字体字节数据
+    final String fontFamilyName = fonts[font];
+    final String fontAssetPath = "Fonts/$fontFamilyName.ttf";
+    final ByteData fontData = await rootBundle.load(fontAssetPath);
+    final Uint8List fontBytes = fontData.buffer.asUint8List();
+
+    // 调用新的核心函数进行图片合成
+    return ImageTextOverlay.generateStickerFromBytes(
+      imageBytes: bgImageBytes,
       content: content,
+      fontFamilyName: fontFamilyName,
+      fontBytes: fontBytes,
+      pos: pos,
+      lean: lean,
       fontSize: fontSize,
       edgeSize: edgeSize,
-      font: font,
       color: fontColor,
     );
-
-    // 合成最终图片
-    final image = await _compositeImages(bgImage, textPainter, pos, lean);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    // await outputFile.writeAsBytes(byteData!.buffer.asUint8List());
-    // print(outputFile.path);
-
-    // return outputFile;
-    return byteData!.buffer.asUint8List();
-  }
-
-  static Future<ui.Image> _loadImage(String assetPath) async {
-    final data = await rootBundle.load(assetPath);
-    return decodeImageFromList(Uint8List.view(data.buffer));
-  }
-
-  static Future<TextPainter> _createTextPainter({
-    required String content,
-    required double fontSize,
-    required int edgeSize,
-    required int font,
-    required Color color,
-  }) async {
-    // 加载字体
-    // final fontLoader =
-    //     font == 1 ? "Fonts/ShangShouFangTangTi.ttf" : "Fonts/YurukaStd.ttf";
-    final fontLoader = "Fonts/${fonts[font]}.ttf";
-
-    final fontData = await rootBundle.load(fontLoader);
-    final fontProvider = FontLoader(fonts[font])
-      ..addFont(Future.value(fontData));
-    await fontProvider.load();
-
-    final textStyle = TextStyle(
-      fontFamily: fonts[font],
-      fontSize: fontSize,
-      color: color,
-      shadows:
-          getOffsets(360)
-              .map(
-                (offset) => Shadow(
-                  color: Colors.white, // 阴影颜色
-                  offset: offset * edgeSize.toDouble(),
-                  blurRadius: 0, // 阴影模糊半径
-                ),
-              )
-              .toList(), // 添加阴影到文本样式
-    );
-
-    // 计算文本尺寸
-    final lines = content.split("\n");
-    double maxWidth = 0;
-    // double totalHeight = 0;
-
-    for (final line in lines) {
-      final textSpan = TextSpan(text: line, style: textStyle);
-      final textPainter = TextPainter(
-        text: textSpan,
-        textDirection: TextDirection.ltr,
-      )..layout();
-      maxWidth = maxWidth > textPainter.width ? maxWidth : textPainter.width;
-      // totalHeight += fontSize * 0.97;
-    }
-
-    // 创建文本绘制器
-    // 创建文本绘制器时添加旋转矩阵
-    final painter = TextPainter(
-      text: TextSpan(text: content, style: textStyle),
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    )..layout(maxWidth: maxWidth);
-
-    return painter;
-  }
-
-  static Future<ui.Image> _compositeImages(
-    ui.Image bgImage,
-    TextPainter textPainter,
-    Offset position,
-    double lean,
-  ) async {
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-
-    // 绘制背景
-    canvas.drawImage(bgImage, Offset.zero, Paint());
-
-    canvas.save();
-
-    // 绘制文本
-    // 调整旋转中心点到文本中心
-    final center = Offset(textPainter.width / 2, textPainter.height / 2);
-    canvas.translate(center.dx, center.dy); // 移动原点到中心
-    canvas.rotate(-lean * pi / 180); // 旋转画布
-
-    // 绘制文本（基于新原点）
-    textPainter.paint(
-      canvas,
-      Offset(-textPainter.width / 2, -textPainter.height / 2) + position,
-    );
-
-    // 恢复画布状态
-    canvas.restore();
-
-    final picture = recorder.endRecording();
-    return await picture.toImage(bgImage.width, bgImage.height);
-  }
-
-  static List<Offset> getOffsets(int precision) {
-    assert(precision > 0);
-    // 半径为1，平分周角为precision份
-    // 例如precision为8
-    // 输出为 [
-    //   Offset(0, 1),
-    //   Offset(1, 1),
-    //   Offset(1, 0),
-    //   Offset(1, -1),
-    //   Offset(0, -1),
-    //   Offset(-1, -1),
-    //   Offset(-1, 0),
-    //   Offset(-1, 1),
-    // ]
-    List<Offset> offsets = [];
-    for (int i = 0; i < precision; i++) {
-      final angle = 2 * pi * i / precision;
-      final x = cos(angle);
-      final y = sin(angle);
-      offsets.add(Offset(x, y));
-    }
-    return offsets;
   }
 }
