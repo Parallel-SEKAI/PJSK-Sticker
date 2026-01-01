@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:ionicons/ionicons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutPage extends StatefulWidget {
@@ -77,7 +76,7 @@ class _AboutPageState extends State<AboutPage> {
         title: const Text("关于"),
         leading: IconButton(
           icon: Icon(
-            Ionicons.arrow_back,
+            Icons.arrow_back,
             color: Theme.of(context).colorScheme.onSurface, // 图标颜色(跟随主题)
             size: 24, // 图标大小
           ),
@@ -111,7 +110,7 @@ class _AboutPageState extends State<AboutPage> {
                 Text("1.2.0"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
-                  Ionicons.chevron_forward, // 箭头图标
+                  Icons.chevron_right, // 箭头图标
                   size: 18, // 图标大小（略小于默认，更协调）透明效果
                 ),
               ],
@@ -132,7 +131,7 @@ class _AboutPageState extends State<AboutPage> {
                 Text("Parallel-SEKAI Team"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
-                  Ionicons.chevron_forward, // 箭头图标
+                  Icons.chevron_right, // 箭头图标
                   size: 18, // 图标大小（略小于默认，更协调）透明效果
                 ),
               ],
@@ -149,7 +148,7 @@ class _AboutPageState extends State<AboutPage> {
                 Text("Parallel-SEKAI/PJSK-Sticker"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
-                  Ionicons.chevron_forward, // 箭头图标
+                  Icons.chevron_right, // 箭头图标
                   size: 18, // 图标大小（略小于默认，更协调）透明效果
                 ),
               ],
@@ -168,7 +167,7 @@ class _AboutPageState extends State<AboutPage> {
                 Text(qq ?? ""), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
-                  Ionicons.chevron_forward, // 箭头图标
+                  Icons.chevron_right, // 箭头图标
                   size: 18, // 图标大小（略小于默认，更协调）透明效果
                 ),
               ],
@@ -200,7 +199,7 @@ class _AboutPageState extends State<AboutPage> {
           ListTile(
             title: Text("微信赞赏码"),
             trailing: Icon(
-              Ionicons.chevron_forward, // 箭头图标
+              Icons.chevron_right, // 箭头图标
               size: 18, // 图标大小（略小于默认，更协调）透明效果
             ),
             onTap: () {
@@ -221,12 +220,16 @@ class _AboutPageState extends State<AboutPage> {
                             final File file = File(
                               '/storage/emulated/0/Pictures/wechat.png',
                             );
-                            file.writeAsBytesSync(
-                              (await rootBundle.load("assets/wechat.png")).buffer.asUint8List(),
-                            );
+                            final bytes = (await rootBundle.load("assets/wechat.png")).buffer.asUint8List();
+                            file.writeAsBytesSync(bytes);
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(
                               context,
-                            ).showSnackBar(SnackBar(content: Text("已保存到 Pictures/wechat.png")));
+                            ).showSnackBar(
+                              const SnackBar(
+                                content: Text("已保存到 Pictures/wechat.png"),
+                              ),
+                            );
                           },
                           child: Text("保存"),
                         ),
@@ -245,7 +248,7 @@ class _AboutPageState extends State<AboutPage> {
           ListTile(
             title: Text("爱发电"),
             trailing: Icon(
-              Ionicons.chevron_forward, // 箭头图标
+              Icons.chevron_right, // 箭头图标
               size: 18, // 图标大小（略小于默认，更协调）透明效果
             ),
             onTap: () {
@@ -269,7 +272,7 @@ class _AboutPageState extends State<AboutPage> {
                 Text("SEGA"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
-                  Ionicons.chevron_forward, // 箭头图标
+                  Icons.chevron_right, // 箭头图标
                   size: 18, // 图标大小（略小于默认，更协调）透明效果
                 ),
               ],
@@ -286,7 +289,7 @@ class _AboutPageState extends State<AboutPage> {
                 Text("flutter"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
-                  Ionicons.chevron_forward, // 箭头图标
+                  Icons.chevron_right, // 箭头图标
                   size: 18, // 图标大小（略小于默认，更协调）透明效果
                 ),
               ],
@@ -303,7 +306,7 @@ class _AboutPageState extends State<AboutPage> {
                 Text("sszzz830"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
-                  Ionicons.chevron_forward, // 箭头图标
+                  Icons.chevron_right, // 箭头图标
                   size: 18, // 图标大小（略小于默认，更协调）透明效果
                 ),
               ],
@@ -324,7 +327,7 @@ class _AboutPageState extends State<AboutPage> {
                 Text("TheOriginalAyaka"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
-                  Ionicons.chevron_forward, // 箭头图标
+                  Icons.chevron_right, // 箭头图标
                   size: 18, // 图标大小（略小于默认，更协调）透明效果
                 ),
               ],

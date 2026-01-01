@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:pjsk_sticker/pages/about.dart';
 import 'package:pjsk_sticker/sticker.dart';
@@ -107,8 +106,9 @@ class _StickerPageState extends State<StickerPage> {
       'rotation_angle': _lean.round().toString(),
     };
 
-    if (_selectedSticker != -1)
+    if (_selectedSticker != -1) {
       params['character_index'] = _selectedSticker.toString();
+    }
     final List<String> positionList = [
       _pos.dx.round().toString(),
       _pos.dy.round().toString(),
@@ -119,8 +119,9 @@ class _StickerPageState extends State<StickerPage> {
       (_moreSettingsColor.b * 255).floor().toString(),
     ];
 
-    if (_font >= 0 && _font < PjskGenerator.fonts.length)
+    if (_font >= 0 && _font < PjskGenerator.fonts.length) {
       params['font_path'] = PjskGenerator.fonts[_font];
+    }
 
     return _apiBaseUrl.replace(
       queryParameters: {
@@ -281,7 +282,9 @@ class _StickerPageState extends State<StickerPage> {
       lean: _lean,
       color: _moreSettingsEnabled ? _moreSettingsColor : null,
     );
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _handleImageTap() async {
@@ -307,10 +310,11 @@ class _StickerPageState extends State<StickerPage> {
           ]);
           Pasteboard.writeFiles([file.path.replaceAll('/', '\\\\')]);
         }
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(Platform.isAndroid ? '已保存到相册' : '已复制并保存')),
           );
+        }
       }
     } catch (e) {
       if (kDebugMode) print(e);
@@ -340,10 +344,12 @@ class _StickerPageState extends State<StickerPage> {
 
   Color _getThemeColor() {
     final charKey = PjskGenerator.characterMap[_character];
-    if (charKey != null && PjskGenerator.characterColor.containsKey(charKey))
+    if (charKey != null && PjskGenerator.characterColor.containsKey(charKey)) {
       return PjskGenerator.characterColor[charKey]!;
-    if (PjskGenerator.groupColor.containsKey(_character))
+    }
+    if (PjskGenerator.groupColor.containsKey(_character)) {
       return PjskGenerator.groupColor[_character]!;
+    }
     return Theme.of(context).colorScheme.primary;
   }
 
@@ -364,15 +370,10 @@ class _StickerPageState extends State<StickerPage> {
   }
 
   void _showResetDialog() {
-    showDialog(
+    showAdaptiveDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            icon: Icon(
-              Ionicons.refresh_circle_outline,
-              color: Theme.of(context).colorScheme.error,
-              size: 40,
-            ),
             title: const Text('重置所有参数？'),
             content: const Text('这将会清除当前所有文字内容、位置和样式设置，并恢复到默认状态。'),
             actions: [
@@ -380,15 +381,15 @@ class _StickerPageState extends State<StickerPage> {
                 onPressed: () => Navigator.pop(context),
                 child: const Text('取消'),
               ),
-              FilledButton.tonal(
+              TextButton(
                 onPressed: () {
                   _resetPreferences();
                   Navigator.pop(context);
                 },
-                style: FilledButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
+                child: Text(
+                  '确认重置',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
-                child: const Text('确认重置'),
               ),
             ],
           ),
@@ -474,23 +475,25 @@ class _StickerPageState extends State<StickerPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (character != null && _characterKeys.containsKey(character)) {
         final key = _characterKeys[character];
-        if (key?.currentContext != null)
+        if (key?.currentContext != null) {
           Scrollable.ensureVisible(
             key!.currentContext!,
             duration: const Duration(milliseconds: 300),
             alignment: 0.5,
           );
+        }
       }
       if (character != null && _selectedSticker != -1) {
         final stickerKey =
             "${PjskGenerator.characterMap[character] ?? ""}_$_selectedSticker";
         final key = _stickerKeys[stickerKey];
-        if (key?.currentContext != null)
+        if (key?.currentContext != null) {
           Scrollable.ensureVisible(
             key!.currentContext!,
             duration: const Duration(milliseconds: 300),
             alignment: 0.3,
           );
+        }
       }
     });
 
@@ -527,7 +530,7 @@ class _StickerPageState extends State<StickerPage> {
                     child: Padding(
                       padding: const EdgeInsets.all(32.0),
                       child: FilledButton.icon(
-                        icon: const Icon(Ionicons.shuffle),
+                        icon: const Icon(Icons.shuffle),
                         label: const Text("确认选择随机角色"),
                         onPressed: () {
                           setState(() => _character = "随机");
@@ -575,12 +578,13 @@ class _StickerPageState extends State<StickerPage> {
     final List<String> all = ["随机", ...PjskGenerator.groups];
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final key = _groupKeys[group ?? "随机"];
-      if (key?.currentContext != null)
+      if (key?.currentContext != null) {
         Scrollable.ensureVisible(
           key!.currentContext!,
           duration: const Duration(milliseconds: 300),
           alignment: 0.5,
         );
+      }
     });
 
     return SingleChildScrollView(
@@ -603,15 +607,17 @@ class _StickerPageState extends State<StickerPage> {
                   onSelected: (_) {
                     setModalState(() {
                       _selectedGroup = g;
-                      if (g != "随机")
+                      if (g != "随机") {
                         _selectedCharacter =
                             PjskGenerator.groupMembers[g]!.first;
+                      }
                     });
                     setState(() {
                       _selectedGroup = g;
-                      if (g != "随机")
+                      if (g != "随机") {
                         _selectedCharacter =
                             PjskGenerator.groupMembers[g]!.first;
+                      }
                     });
                   },
                   selectedColor: color.withValues(alpha: 0.3),
@@ -825,17 +831,17 @@ class _StickerPageState extends State<StickerPage> {
           title: const Text('PJSK Sticker'),
           actions: [
             IconButton(
-              icon: const Icon(Ionicons.refresh_outline),
+              icon: const Icon(Icons.refresh),
               onPressed: _showResetDialog,
               tooltip: "重置",
             ),
             IconButton(
-              icon: const Icon(Ionicons.share_social_outline),
+              icon: const Icon(Icons.share),
               onPressed: _exportImportConfig,
               tooltip: "分享配置",
             ),
             IconButton(
-              icon: const Icon(Ionicons.information_circle_outline),
+              icon: const Icon(Icons.info_outline),
               onPressed:
                   () => Navigator.push(
                     context,
@@ -859,7 +865,7 @@ class _StickerPageState extends State<StickerPage> {
                       controller: _contextController,
                       decoration: InputDecoration(
                         labelText: '内容',
-                        prefixIcon: const Icon(Ionicons.text_outline),
+                        prefixIcon: const Icon(Icons.text_fields),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.clear),
                           onPressed: () {
@@ -908,7 +914,7 @@ class _StickerPageState extends State<StickerPage> {
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _handleImageTap,
           label: const Text('导出图片'),
-          icon: const Icon(Ionicons.download_outline),
+          icon: const Icon(Icons.download),
         ),
       ),
     );
@@ -916,7 +922,7 @@ class _StickerPageState extends State<StickerPage> {
 
   Widget _buildStyleExpansionTile() {
     return ExpansionTile(
-      leading: const Icon(Ionicons.color_palette_outline),
+      leading: const Icon(Icons.palette_outlined),
       title: const Text('文字样式'),
       initiallyExpanded: true,
       children: [
@@ -962,7 +968,7 @@ class _StickerPageState extends State<StickerPage> {
 
   Widget _buildPositionExpansionTile() {
     return ExpansionTile(
-      leading: const Icon(Ionicons.move_outline),
+      leading: const Icon(Icons.open_with),
       title: const Text('位置调整'),
       children: [
         _buildSliderTile(
@@ -993,7 +999,7 @@ class _StickerPageState extends State<StickerPage> {
 
   Widget _buildAdvancedExpansionTile() {
     return ExpansionTile(
-      leading: const Icon(Ionicons.options_outline),
+      leading: const Icon(Icons.tune),
       title: const Text('高级样式'),
       children: [
         _buildSliderTile(
@@ -1010,7 +1016,7 @@ class _StickerPageState extends State<StickerPage> {
         SwitchListTile(
           title: const Text('自定义颜色'),
           subtitle: const Text('启用后将覆盖角色默认色'),
-          secondary: const Icon(Ionicons.color_fill_outline),
+          secondary: const Icon(Icons.format_color_fill),
           value: _moreSettingsEnabled,
           onChanged: (v) {
             setState(() => _moreSettingsEnabled = v);

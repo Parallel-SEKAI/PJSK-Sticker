@@ -15,7 +15,6 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   flutter_launcher_icons: ^0.14.4
   http: ^1.4.0
-  ionicons: ^0.2.2
   path_provider: ^2.0.1
   pasteboard: ^0.4.0
   permission_handler: ^12.0.1
