@@ -40,7 +40,7 @@ jobs:
         if: matrix.platform == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y devscripts libgtk-3-dev libblkid-dev liblzma-dev libgcrypt20-dev
+          sudo apt-get install -y devscripts libgtk-3-dev libblkid-dev liblzma-dev libgcrypt20-dev imagemagick
 
       - name: Install dependencies
         run: flutter pub get
@@ -76,6 +76,7 @@ jobs:
         if: matrix.platform == 'Linux'
         run: |
           sudo apt-get install -y libfuse2
+          convert assets/icon.png -resize 256x256! icon_fixed.png
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
           mkdir -p AppDir/usr/bin
@@ -86,7 +87,7 @@ jobs:
           Icon=pjsk_sticker
           Type=Application
           Categories=Utility;" > pjsk_sticker.desktop
-          ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run --appdir AppDir -i assets/icon.png -d pjsk_sticker.desktop --output appimage
+          ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run --appdir AppDir -i icon_fixed.png -d pjsk_sticker.desktop --output appimage
           cp *.AppImage ${{ github.workspace }}/PJSK_Sticker-x86_64.AppImage
 
       # 打包压缩步骤
