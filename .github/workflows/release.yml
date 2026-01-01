@@ -88,7 +88,7 @@ jobs:
           Type=Application
           Categories=Utility;" > pjsk_sticker.desktop
           ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run --appdir AppDir -i pjsk_sticker.png -d pjsk_sticker.desktop --output appimage
-          cp *.AppImage ${{ github.workspace }}/PJSK_Sticker-x86_64.AppImage
+          rm linuxdeploy-x86_64.AppImage
 
       # 打包压缩步骤
       - name: Archive Windows build artifact
