@@ -3,42 +3,94 @@ import "dart:ui" as ui;
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 
+class TextOverlayLayer {
+  final String content;
+  final String fontFamilyName;
+  final Uint8List fontBytes;
+  final Offset pos;
+  final double lean;
+  final double fontSize;
+  final int edgeSize;
+  final Color color;
+
+  TextOverlayLayer({
+    required this.content,
+    required this.fontFamilyName,
+    required this.fontBytes,
+    required this.pos,
+    required this.lean,
+    required this.fontSize,
+    required this.edgeSize,
+    required this.color,
+  });
+}
+
 class ImageTextOverlay {
+  static final Map<String, Future<void>> _fontLoadFutures = {};
+  static final Set<String> _loadedFonts = {};
+
   static Future<Uint8List> generateStickerFromBytes({
     required Uint8List imageBytes,
-    required String content,
-    required String fontFamilyName,
-    required Uint8List fontBytes,
-    Offset pos = const Offset(20, 10),
-    double lean = 15,
-    double fontSize = 50,
-    int edgeSize = 4,
-    required Color color,
+    required List<TextOverlayLayer> layers,
   }) async {
     final bgImage = await _decodeImageFromBytes(imageBytes);
 
-    final textPainter = await _createTextPainter(
-      content: content,
-      fontSize: fontSize,
-      edgeSize: edgeSize,
-      fontFamilyName: fontFamilyName,
-      fontBytes: fontBytes,
-      color: color,
-    );
+    // 预加载所有唯一的字体
+    final Map<String, Uint8List> uniqueFonts = {};
+    for (var layer in layers) {
+      if (layer.fontBytes.isNotEmpty) {
+        uniqueFonts[layer.fontFamilyName] = layer.fontBytes;
+      }
+    }
 
-    final image = await _compositeImages(bgImage, textPainter, pos, lean);
+    for (var entry in uniqueFonts.entries) {
+      await _loadFontFromBytes(entry.value, entry.key);
+    }
+
+    List<TextPainter> textPainters = [];
+    for (var layer in layers) {
+      final textPainter = await _createTextPainter(
+        content: layer.content,
+        fontSize: layer.fontSize,
+        edgeSize: layer.edgeSize,
+        fontFamilyName: layer.fontFamilyName,
+        color: layer.color,
+      );
+      textPainters.add(textPainter);
+    }
+
+    final image = await _compositeImages(bgImage, textPainters, layers);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     return byteData!.buffer.asUint8List();
   }
 
   static Future<ui.Image> _decodeImageFromBytes(Uint8List imageData) async {
-    return decodeImageFromList(Uint8List.view(imageData.buffer));
+    return decodeImageFromList(imageData);
   }
 
-  static Future<void> _loadFontFromBytes(Uint8List fontBytes, String fontFamilyName) async {
-    final fontProvider = FontLoader(fontFamilyName)
-      ..addFont(Future.value(ByteData.view(fontBytes.buffer)));
-    await fontProvider.load();
+  static Future<void> _loadFontFromBytes(
+    Uint8List fontBytes,
+    String fontFamilyName,
+  ) async {
+    if (_loadedFonts.contains(fontFamilyName)) return;
+
+    if (_fontLoadFutures.containsKey(fontFamilyName)) {
+      return _fontLoadFutures[fontFamilyName];
+    }
+
+    final future = Future(() async {
+      try {
+        final fontProvider = FontLoader(fontFamilyName)
+          ..addFont(Future.value(ByteData.view(fontBytes.buffer)));
+        await fontProvider.load();
+        _loadedFonts.add(fontFamilyName);
+      } finally {
+        _fontLoadFutures.remove(fontFamilyName);
+      }
+    });
+
+    _fontLoadFutures[fontFamilyName] = future;
+    return future;
   }
 
   static Future<TextPainter> _createTextPainter({
@@ -46,11 +98,8 @@ class ImageTextOverlay {
     required double fontSize,
     required int edgeSize,
     required String fontFamilyName,
-    required Uint8List fontBytes,
     required Color color,
   }) async {
-    await _loadFontFromBytes(fontBytes, fontFamilyName);
-
     final textStyle = TextStyle(
       fontFamily: fontFamilyName,
       fontSize: fontSize,
@@ -90,27 +139,36 @@ class ImageTextOverlay {
 
   static Future<ui.Image> _compositeImages(
     ui.Image bgImage,
-    TextPainter textPainter,
-    Offset position,
-    double lean,
+    List<TextPainter> textPainters,
+    List<TextOverlayLayer> layers,
   ) async {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
     canvas.drawImage(bgImage, Offset.zero, Paint());
 
-    canvas.save();
+    for (int i = 0; i < textPainters.length; i++) {
+      final textPainter = textPainters[i];
+      final layer = layers[i];
 
-    final center = Offset(textPainter.width / 2, textPainter.height / 2);
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(-lean * pi / 180);
+      canvas.save();
 
-    textPainter.paint(
-      canvas,
-      Offset(-textPainter.width / 2, -textPainter.height / 2) + position,
-    );
+      // 1. 先位移到目标位置（基于原始坐标系，不受旋转影响）
+      canvas.translate(layer.pos.dx, layer.pos.dy);
 
-    canvas.restore();
+      // 2. 以文字中心为基准进行旋转
+      final halfWidth = textPainter.width / 2;
+      final halfHeight = textPainter.height / 2;
+
+      canvas.translate(halfWidth, halfHeight);
+      canvas.rotate(-layer.lean * pi / 180);
+      canvas.translate(-halfWidth, -halfHeight);
+
+      // 3. 绘制文字
+      textPainter.paint(canvas, Offset.zero);
+
+      canvas.restore();
+    }
 
     final picture = recorder.endRecording();
     return await picture.toImage(bgImage.width, bgImage.height);

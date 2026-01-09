@@ -20,14 +20,18 @@ void main() {
     test('generateStickerFromBytes should return valid PNG bytes', () async {
       final result = await ImageTextOverlay.generateStickerFromBytes(
         imageBytes: testImageBytes,
-        content: "测试文字\nTest Line 2",
-        fontFamilyName: "TestFont",
-        fontBytes: testFontBytes,
-        color: Colors.red,
-        fontSize: 40,
-        lean: 10,
-        pos: const Offset(10, 10),
-        edgeSize: 4,
+        layers: [
+          TextOverlayLayer(
+            content: "测试文字\nTest Line 2",
+            fontFamilyName: "TestFont",
+            fontBytes: testFontBytes,
+            color: Colors.red,
+            fontSize: 40,
+            lean: 10,
+            pos: const Offset(10, 10),
+            edgeSize: 4,
+          ),
+        ],
       );
 
       expect(result, isNotNull);
