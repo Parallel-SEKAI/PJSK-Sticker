@@ -127,7 +127,10 @@ class _StickerPageState extends State<StickerPage> {
     await prefs.setString('selectedCharacter', _selectedCharacter ?? 'emu');
     await prefs.setInt('selectedSticker', _selectedSticker);
     await prefs.setString('character', _character);
-    await prefs.setString('layers', jsonEncode(_layers.map((l) => l.toJson()).toList()));
+    await prefs.setString(
+      'layers',
+      jsonEncode(_layers.map((l) => l.toJson()).toList()),
+    );
   }
 
   // --- 4. 配置导入导出 ---
@@ -141,9 +144,7 @@ class _StickerPageState extends State<StickerPage> {
       params['character_index'] = _selectedSticker.toString();
     }
 
-    return _apiBaseUrl.replace(
-      queryParameters: params,
-    );
+    return _apiBaseUrl.replace(queryParameters: params);
   }
 
   void _reloadFromUri(Uri uri) {
@@ -167,9 +168,12 @@ class _StickerPageState extends State<StickerPage> {
       } else {
         // 兼容旧版单一图层参数
         String content = queryParams['text']?.first ?? "わんだほーい";
-        double fontSize = double.tryParse(queryParams['font_size']?.first ?? '') ?? 42;
-        int edgeSize = int.tryParse(queryParams['stroke_width']?.first ?? '') ?? 4;
-        double lean = double.tryParse(queryParams['rotation_angle']?.first ?? '') ?? 15;
+        double fontSize =
+            double.tryParse(queryParams['font_size']?.first ?? '') ?? 42;
+        int edgeSize =
+            int.tryParse(queryParams['stroke_width']?.first ?? '') ?? 4;
+        double lean =
+            double.tryParse(queryParams['rotation_angle']?.first ?? '') ?? 15;
         Offset pos = const Offset(20, 10);
         if (queryParams['position']?.length == 2) {
           pos = Offset(
@@ -204,7 +208,7 @@ class _StickerPageState extends State<StickerPage> {
             font: font,
             useCustomColor: useCustomColor,
             customColor: customColor,
-          )
+          ),
         ];
         _currentLayerId = _layers.first.id;
         _contextController.text = _currentLayer.content;
@@ -313,10 +317,7 @@ class _StickerPageState extends State<StickerPage> {
     char = PjskGenerator.characterMap[char] ?? char;
     if (_selectedSticker != -1) char = '$char$_selectedSticker';
 
-    _byteData = await PjskGenerator.pjsk(
-      layers: _layers,
-      character: char,
-    );
+    _byteData = await PjskGenerator.pjsk(layers: _layers, character: char);
     if (mounted) {
       setState(() {});
     }
@@ -412,17 +413,20 @@ class _StickerPageState extends State<StickerPage> {
 
   void _removeLayer(int index) {
     if (_layers.length <= 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("至少需要保留一个图层")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("至少需要保留一个图层")));
       return;
     }
 
     final layerToRemove = _layers[index];
     final layerText = layerToRemove.content;
-    final displayName = layerText.isEmpty
-        ? "图层 ${index + 1}"
-        : (layerText.length > 10 ? "${layerText.substring(0, 10)}..." : layerText);
+    final displayName =
+        layerText.isEmpty
+            ? "图层 ${index + 1}"
+            : (layerText.length > 10
+                ? "${layerText.substring(0, 10)}..."
+                : layerText);
 
     showAdaptiveDialog(
       context: context,
@@ -699,23 +703,22 @@ class _StickerPageState extends State<StickerPage> {
                 child: ChoiceChip(
                   label: Text(g),
                   selected: isSelected,
-                  onSelected: (_)
-                      {
-                        setModalState(() {
-                          _selectedGroup = g;
-                          if (g != "随机") {
-                            _selectedCharacter =
-                                PjskGenerator.groupMembers[g]!.first;
-                          }
-                        });
-                        setState(() {
-                          _selectedGroup = g;
-                          if (g != "随机") {
-                            _selectedCharacter =
-                                PjskGenerator.groupMembers[g]!.first;
-                          }
-                        });
-                      },
+                  onSelected: (_) {
+                    setModalState(() {
+                      _selectedGroup = g;
+                      if (g != "随机") {
+                        _selectedCharacter =
+                            PjskGenerator.groupMembers[g]!.first;
+                      }
+                    });
+                    setState(() {
+                      _selectedGroup = g;
+                      if (g != "随机") {
+                        _selectedCharacter =
+                            PjskGenerator.groupMembers[g]!.first;
+                      }
+                    });
+                  },
                   selectedColor: color.withValues(alpha: 0.3),
                   labelStyle: TextStyle(
                     color: isSelected ? color : null,
@@ -942,7 +945,9 @@ class _StickerPageState extends State<StickerPage> {
                       label: Text(
                         text.isEmpty
                             ? "图层 ${index + 1}"
-                            : (text.length > 8 ? "${text.substring(0, 8)}..." : text),
+                            : (text.length > 8
+                                ? "${text.substring(0, 8)}..."
+                                : text),
                       ),
                       selected: isSelected,
                       onSelected: (_) => _selectLayer(layer.id),
@@ -982,11 +987,13 @@ class _StickerPageState extends State<StickerPage> {
               onPressed: _showResetDialog,
               tooltip: "重置",
             ),
-            // IconButton(
-            //   icon: const Icon(Icons.share),
-            //   onPressed: _exportImportConfig,
-            //   tooltip: "分享配置",
-            // ),
+            SizedBox.shrink(
+              child: IconButton(
+                icon: const Icon(Icons.share),
+                onPressed: _exportImportConfig,
+                tooltip: "分享配置",
+              ),
+            ),
             IconButton(
               icon: const Icon(Icons.info_outline),
               onPressed:
