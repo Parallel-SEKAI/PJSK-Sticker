@@ -1,7 +1,85 @@
+import "package:flutter/foundation.dart";
+import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:pjsk_sticker/image_text_overlay.dart";
 
+class TextLayer {
+  final String id;
+  String content;
+  Offset pos;
+  double lean;
+  double fontSize;
+  int edgeSize;
+  int font;
+  bool useCustomColor;
+  Color customColor;
+
+  TextLayer({
+    String? id,
+    required this.content,
+    this.pos = const Offset(20, 10),
+    this.lean = 15,
+    this.fontSize = 50,
+    this.edgeSize = 4,
+    this.font = 1,
+    this.useCustomColor = false,
+    this.customColor = const Color(0xFFDDAACC),
+  }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
+
+  Map<String, dynamic> toJson() => {
+    'i': id,
+    'c': content,
+    'x': pos.dx,
+    'y': pos.dy,
+    'r': lean,
+    's': fontSize,
+    'e': edgeSize,
+    'f': font,
+    'u': useCustomColor,
+    'clr': customColor.toARGB32(),
+  };
+
+  factory TextLayer.fromJson(Map<String, dynamic> json) => TextLayer(
+    id: json['i'] ?? json['id'],
+    content: json['c'] ?? json['content'] ?? "",
+    pos: Offset(
+      (json['x'] ?? json['pos_x'] ?? 20).toDouble(),
+      (json['y'] ?? json['pos_y'] ?? 10).toDouble(),
+    ),
+    lean: (json['r'] ?? json['lean'] ?? 15).toDouble(),
+    fontSize: (json['s'] ?? json['fontSize'] ?? 50).toDouble(),
+    edgeSize: json['e'] ?? json['edgeSize'] ?? 4,
+    font: json['f'] ?? json['font'] ?? 1,
+    useCustomColor: json['u'] ?? json['useCustomColor'] ?? false,
+    customColor: Color(json['clr'] ?? json['customColor'] ?? 0xFFDDAACC),
+  );
+
+  TextLayer copyWith({
+    String? content,
+    Offset? pos,
+    double? lean,
+    double? fontSize,
+    int? edgeSize,
+    int? font,
+    bool? useCustomColor,
+    Color? customColor,
+  }) => TextLayer(
+    id: id,
+    content: content ?? this.content,
+    pos: pos ?? this.pos,
+    lean: lean ?? this.lean,
+    fontSize: fontSize ?? this.fontSize,
+    edgeSize: edgeSize ?? this.edgeSize,
+    font: font ?? this.font,
+    useCustomColor: useCustomColor ?? this.useCustomColor,
+    customColor: customColor ?? this.customColor,
+  );
+}
+
 class PjskGenerator {
+  static final Map<String, Uint8List> _imageCache = {};
+  static final Map<int, Uint8List> _fontCache = {};
+
   static final List<String> groups = [
     "バーチャル・シンガー",
     "Leo/need",
@@ -995,69 +1073,109 @@ class PjskGenerator {
 
   static final List<String> fonts = ["YurukaStd", "ShangShouFangTangTi"];
 
-  static Future<Uint8List> pjsk({
-    required String content,
-    String character = "",
-    Offset pos = const Offset(20, 10),
-    double lean = 15,
-    double fontSize = 50,
-    int edgeSize = 4,
-    int font = 1,
-    Color? color,
-  }) async {
-    // fileName ??= "pjsk_${DateTime.now().millisecondsSinceEpoch}.png";
-    // fileName ??= "pjsk.png";
-    // 处理文本内容
-    // content = content.replaceAll("&br", "\n").replaceAll("&sp", " ");
+  /// 清理所有静态缓存（图片和字体）
+  static void clearCache() {
+    _imageCache.clear();
+    _fontCache.clear();
+  }
 
-    // 确定角色和图片路径
+  static Future<Uint8List> pjsk({
+    required List<TextLayer> layers,
+    String character = "",
+  }) async {
+    // 1. 确定角色名称
     String characterName = character.toLowerCase().replaceAll(
       RegExp(r"[^a-z]"),
       "",
     );
-    characterName =
-        characterList.contains(characterName)
-            ? characterName
-            : characterList[DateTime.now().millisecond % characterList.length];
-
-    // 处理角色编号
-    String charNumber = character.replaceAll(RegExp(r"[^0-9]"), "");
-    int? charNum = int.tryParse(charNumber);
-    if (charNum == null ||
-        charNum <= 0 ||
-        charNum > characterLen[characterName]!) {
-      charNum = DateTime.now().millisecond % characterLen[characterName]! + 1;
+    
+    // 如果角色不在列表中，随机选一个或默认用 miku
+    if (!characterList.contains(characterName)) {
+      characterName = "miku";
     }
 
-    final charPath =
-        "assets/characters/$characterName/$characterName$charNum.png";
+    // 2. 确定角色贴纸编号
+    int charNum = int.tryParse(character.replaceAll(RegExp(r"[^0-9]"), "")) ?? 1;
+    final int maxNum = characterLen[characterName] ?? 1;
+    if (charNum < 1 || charNum > maxNum) {
+      charNum = 1;
+    }
 
-    // 加载背景图片字节数据
-    final bgImageData = await rootBundle.load(charPath);
-    final Uint8List bgImageBytes = bgImageData.buffer.asUint8List();
+    // 3. 确定背景图片路径并从缓存加载
+    final String charPath = "assets/characters/$characterName/$characterName$charNum.png";
+    
+    if (!_imageCache.containsKey(charPath)) {
+      // 内存管理：缓存超过 30 张图片时移除最旧的一张 (FIFO)
+      if (_imageCache.length >= 30) {
+        _imageCache.remove(_imageCache.keys.first);
+      }
+      
+      try {
+        final bgImageData = await rootBundle.load(charPath);
+        _imageCache[charPath] = bgImageData.buffer.asUint8List();
+      } catch (e) {
+        if (kDebugMode) print("Error loading image $charPath: $e");
+        // 如果特定编号失败，回退到 1.png
+        try {
+          final fallbackPath = "assets/characters/$characterName/${characterName}1.png";
+          final bgImageData = await rootBundle.load(fallbackPath);
+          _imageCache[charPath] = bgImageData.buffer.asUint8List();
+        } catch (e2) {
+          // 极致回退
+          final bgImageData = await rootBundle.load("assets/characters/miku/miku1.png");
+          _imageCache[charPath] = bgImageData.buffer.asUint8List();
+        }
+      }
+    }
+    final Uint8List bgImageBytes = _imageCache[charPath]!;
 
-    Color fontColor = color ?? characterColor[characterName]!;
-    // if (characterName == "miku" && charNum == 16) {
-    //   fontColor = groupColor["25時,ナイトコードで."]!;
-    // }
+    // 4. 预加载所有需要的字体（带缓存）
+    for (var layer in layers) {
+      if (!_fontCache.containsKey(layer.font)) {
+        final int fontIndex = layer.font.clamp(0, fonts.length - 1);
+        final String fontFamilyName = fonts[fontIndex];
+        final String fontAssetPath = "Fonts/$fontFamilyName.ttf";
+        try {
+          final ByteData fontData = await rootBundle.load(fontAssetPath);
+          final bytes = fontData.buffer.asUint8List();
+          if (bytes.isNotEmpty) {
+            _fontCache[layer.font] = bytes;
+          }
+        } catch (e) {
+          if (kDebugMode) print("Error loading font $fontAssetPath: $e");
+          // 如果备用字体也失败，将不再尝试加载该索引
+          if (layer.font != 0) {
+             try {
+               final fallbackData = await rootBundle.load("Fonts/${fonts[0]}.ttf");
+               _fontCache[layer.font] = fallbackData.buffer.asUint8List();
+             } catch (_) {}
+          }
+        }
+      }
+    }
 
-    // 加载字体字节数据
-    final String fontFamilyName = fonts[font];
-    final String fontAssetPath = "Fonts/$fontFamilyName.ttf";
-    final ByteData fontData = await rootBundle.load(fontAssetPath);
-    final Uint8List fontBytes = fontData.buffer.asUint8List();
+    // 5. 准备渲染层
+    List<TextOverlayLayer> renderLayers =
+        layers.map((l) {
+          final int fontIndex = l.font.clamp(0, fonts.length - 1);
+          return TextOverlayLayer(
+            content: l.content,
+            fontFamilyName: fonts[fontIndex],
+            fontBytes: _fontCache[l.font] ?? Uint8List(0),
+            pos: l.pos,
+            lean: l.lean,
+            fontSize: l.fontSize,
+            edgeSize: l.edgeSize,
+            color: l.useCustomColor 
+                ? l.customColor 
+                : (characterColor[characterName] ?? Colors.pink),
+          );
+        }).toList();
 
-    // 调用新的核心函数进行图片合成
+    // 6. 调用核心函数进行图片合成
     return ImageTextOverlay.generateStickerFromBytes(
       imageBytes: bgImageBytes,
-      content: content,
-      fontFamilyName: fontFamilyName,
-      fontBytes: fontBytes,
-      pos: pos,
-      lean: lean,
-      fontSize: fontSize,
-      edgeSize: edgeSize,
-      color: fontColor,
+      layers: renderLayers,
     );
   }
 }
