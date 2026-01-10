@@ -107,7 +107,7 @@ class _AboutPageState extends State<AboutPage> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min, // 仅占必要宽度
               children: [
-                Text("2.0.0"), // 原文字
+                Text("2.1.0"), // 原文字
                 SizedBox(width: 8), // 文字和箭头的间距
                 Icon(
                   Icons.chevron_right, // 箭头图标
@@ -220,12 +220,13 @@ class _AboutPageState extends State<AboutPage> {
                             final File file = File(
                               '/storage/emulated/0/Pictures/wechat.png',
                             );
-                            final bytes = (await rootBundle.load("assets/wechat.png")).buffer.asUint8List();
+                            final bytes =
+                                (await rootBundle.load(
+                                  "assets/wechat.png",
+                                )).buffer.asUint8List();
                             file.writeAsBytesSync(bytes);
                             if (!context.mounted) return;
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(
+                            ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text("已保存到 Pictures/wechat.png"),
                               ),
