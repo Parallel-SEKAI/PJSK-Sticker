@@ -1071,7 +1071,7 @@ class PjskGenerator {
     "tsukasa",
   ];
 
-  static final List<String> fonts = ["YurukaStd", "MaokenAssortedSans"];
+  static final List<String> fonts = ["MaokenAssortedSans"];
 
   /// 清理所有静态缓存（图片和字体）
   static void clearCache() {

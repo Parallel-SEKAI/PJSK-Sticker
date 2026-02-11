@@ -20,7 +20,6 @@
 │   ├── icon.png             # App icon
 │   └── wechat.png           # WeChat-related asset
 ├── Fonts/                   # Custom TrueType fonts
-│   ├── YurukaStd.ttf        # Primary game-style font
 │   └── MaokenAssortedSans.ttf # Alternative decorative font
 ├── lib/                     # Application source code
 │   ├── pages/               # UI Layer

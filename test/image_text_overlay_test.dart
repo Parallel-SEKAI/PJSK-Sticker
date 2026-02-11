@@ -13,7 +13,7 @@ void main() {
 
     setUpAll(() async {
       // 在测试环境中，读取文件的路径相对于项目根目录
-      testFontBytes = await File('Fonts/YurukaStd.ttf').readAsBytes();
+      testFontBytes = await File('Fonts/MaokenAssortedSans.ttf').readAsBytes();
       testImageBytes = await File('assets/icon.png').readAsBytes();
     });
 

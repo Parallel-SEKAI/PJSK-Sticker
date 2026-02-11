@@ -60,7 +60,6 @@ flutter:
     - assets/characters/touya/
     - assets/characters/tsukasa/
     - Fonts/MaokenAssortedSans.ttf
-    - Fonts/YurukaStd.ttf
 
 flutter_launcher_icons:
   android: true
