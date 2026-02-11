@@ -21,7 +21,7 @@ class TextLayer {
     this.lean = 15,
     this.fontSize = 50,
     this.edgeSize = 4,
-    this.font = 1,
+    this.font = 0,
     this.useCustomColor = false,
     this.customColor = const Color(0xFFDDAACC),
   }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
@@ -49,7 +49,7 @@ class TextLayer {
     lean: (json['r'] ?? json['lean'] ?? 15).toDouble(),
     fontSize: (json['s'] ?? json['fontSize'] ?? 50).toDouble(),
     edgeSize: json['e'] ?? json['edgeSize'] ?? 4,
-    font: json['f'] ?? json['font'] ?? 1,
+    font: json['f'] ?? json['font'] ?? 0,
     useCustomColor: json['u'] ?? json['useCustomColor'] ?? false,
     customColor: Color(json['clr'] ?? json['customColor'] ?? 0xFFDDAACC),
   );
