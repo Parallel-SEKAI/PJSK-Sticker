@@ -21,7 +21,7 @@
 │   └── wechat.png           # WeChat-related asset
 ├── Fonts/                   # Custom TrueType fonts
 │   ├── YurukaStd.ttf        # Primary game-style font
-│   └── ShangShouFangTangTi.ttf # Alternative decorative font
+│   └── MaokenAssortedSans.ttf # Alternative decorative font
 ├── lib/                     # Application source code
 │   ├── pages/               # UI Layer
 │   │   ├── app.dart         # Main application wrapper and first-launch/license logic
@@ -39,16 +39,16 @@
 ```
 
 ## 4. Dependencies & Modules
-| Dependency | Purpose |
-|------------|---------|
-| `dynamic_color` | Implements Material 3 dynamic theming based on system wallpaper. |
-| `flutter_colorpicker` | Provides UI for selecting custom text colors. |
-| `path_provider` | Handles platform-specific file system paths. |
-| `pasteboard` | Enables copying generated images to the system clipboard (Desktop). |
-| `share_plus` | Facilitates sharing generated stickers to other applications. |
-| `shared_preferences` | Persists user settings (character selection, layers, fonts). |
-| `permission_handler` | Manages storage and photo permissions on Android/iOS. |
-| `http` | Support for external API interactions (configuration sharing). |
+| Dependency            | Purpose                                                             |
+| --------------------- | ------------------------------------------------------------------- |
+| `dynamic_color`       | Implements Material 3 dynamic theming based on system wallpaper.    |
+| `flutter_colorpicker` | Provides UI for selecting custom text colors.                       |
+| `path_provider`       | Handles platform-specific file system paths.                        |
+| `pasteboard`          | Enables copying generated images to the system clipboard (Desktop). |
+| `share_plus`          | Facilitates sharing generated stickers to other applications.       |
+| `shared_preferences`  | Persists user settings (character selection, layers, fonts).        |
+| `permission_handler`  | Manages storage and photo permissions on Android/iOS.               |
+| `http`                | Support for external API interactions (configuration sharing).      |
 
 ## 5. Naming & Coding Conventions
 - **Language Style**: Follows [Effective Dart](https://dart.dev/guides/language/effective-dart) (camelCase for variables, PascalCase for classes).

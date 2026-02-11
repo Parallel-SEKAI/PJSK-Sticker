@@ -59,7 +59,7 @@ flutter:
     - assets/characters/shizuku/
     - assets/characters/touya/
     - assets/characters/tsukasa/
-    - Fonts/ShangShouFangTangTi.ttf
+    - Fonts/MaokenAssortedSans.ttf
     - Fonts/YurukaStd.ttf
 
 flutter_launcher_icons:
