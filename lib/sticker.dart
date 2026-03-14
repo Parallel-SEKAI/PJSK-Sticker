@@ -1,6 +1,7 @@
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+import "package:pjsk_sticker/font_manager.dart";
 import "package:pjsk_sticker/image_text_overlay.dart";
 
 class TextLayer {
@@ -78,7 +79,7 @@ class TextLayer {
 
 class PjskGenerator {
   static final Map<String, Uint8List> _imageCache = {};
-  static final Map<int, Uint8List> _fontCache = {};
+  static final Map<String, Uint8List> _fontCache = {};
 
   static final List<String> groups = [
     "バーチャル・シンガー",
@@ -985,32 +986,32 @@ class PjskGenerator {
   };
 
   static final Map<String, Color> characterColor = {
-    "airi": Color.fromARGB(255, 216, 95, 116),
-    "akito": Color.fromARGB(255, 224, 94, 62),
-    "an": Color.fromARGB(255, 91, 91, 106),
-    "emu": Color.fromARGB(255, 212, 129, 169),
-    "ena": Color.fromARGB(255, 109, 91, 101),
-    "haruka": Color.fromARGB(255, 49, 94, 168),
-    "honami": Color.fromARGB(255, 172, 125, 130),
-    "ichika": Color.fromARGB(255, 77, 93, 127),
-    "kaito": Color.fromARGB(255, 46, 63, 181),
-    "kanade": Color.fromARGB(255, 176, 185, 214),
-    "kohane": Color.fromARGB(255, 182, 172, 145),
-    "len": Color.fromARGB(255, 244, 224, 135),
-    "luka": Color.fromARGB(255, 240, 198, 223),
-    "mafuyu": Color.fromARGB(255, 97, 72, 146),
-    "meiko": Color.fromARGB(255, 168, 136, 93),
-    "miku": Color.fromARGB(255, 128, 194, 197),
-    "minori": Color.fromARGB(255, 201, 142, 124),
-    "mizuki": Color.fromARGB(255, 217, 179, 176),
-    "nene": Color.fromARGB(255, 183, 186, 174),
-    "rin": Color.fromARGB(255, 246, 231, 141),
-    "rui": Color.fromARGB(255, 206, 160, 240),
-    "saki": Color.fromARGB(255, 246, 201, 217),
-    "shiho": Color.fromARGB(255, 179, 173, 179),
-    "shizuku": Color.fromARGB(255, 141, 170, 197),
-    "touya": Color.fromARGB(255, 167, 180, 222),
-    "tsukasa": Color.fromARGB(255, 235, 190, 155),
+    "airi": Color(0xFFFB8AAC), // #FB8AAC
+    "akito": Color(0xFFFF7722), // #FF7722
+    "an": Color(0xFF00BADC), // #00BADC
+    "emu": Color(0xFFFF66BB), // #FF66BB
+    "ena": Color(0xFFB18F6C), // #B18F6C
+    "haruka": Color(0xFF6495F0), // #6495F0
+    "honami": Color(0xFFF86666), // #F86666
+    "ichika": Color(0xFF33AAEE), // #33AAEE
+    "kaito": Color(0xFF3366CC), // #3366CC
+    "kanade": Color(0xFFBB6688), // #BB6688
+    "kohane": Color(0xFFFF6699), // #FF6699
+    "len": Color(0xFFD3BD00), // #D3BD00
+    "luka": Color(0xFFF88CA7), // #F88CA7
+    "mafuyu": Color(0xFF7171AF), // #7171AF
+    "meiko": Color(0xFFE4485F), // #E4485F
+    "miku": Color(0xFF33CCBB), // #33CCBB
+    "minori": Color(0xFFF39E7D), // #F39E7D
+    "mizuki": Color(0xFFCA8DB6), // #CA8DB6
+    "nene": Color(0xFF19CD94), // #19CD94
+    "rin": Color(0xFFE8A505), // #E8A505
+    "rui": Color(0xFFBB88EE), // #BB88EE
+    "saki": Color(0xFFF5B303), // #F5B303
+    "shiho": Color(0xFFA0C10B), // #A0C10B
+    "shizuku": Color(0xFF5CD0B9), // #5CD0B9
+    "touya": Color(0xFF0077DD), // #0077DD
+    "tsukasa": Color(0xFFF09A04), // #F09A04
   };
 
   static final Map<String, int> characterLen = {
@@ -1071,7 +1072,7 @@ class PjskGenerator {
     "tsukasa",
   ];
 
-  static final List<String> fonts = ["YurukaStd", "ShangShouFangTangTi"];
+  static List<String> get fonts => FontManager.instance.availableFontNames;
 
   /// 清理所有静态缓存（图片和字体）
   static void clearCache() {
@@ -1088,28 +1089,30 @@ class PjskGenerator {
       RegExp(r"[^a-z]"),
       "",
     );
-    
+
     // 如果角色不在列表中，随机选一个或默认用 miku
     if (!characterList.contains(characterName)) {
       characterName = "miku";
     }
 
     // 2. 确定角色贴纸编号
-    int charNum = int.tryParse(character.replaceAll(RegExp(r"[^0-9]"), "")) ?? 1;
+    int charNum =
+        int.tryParse(character.replaceAll(RegExp(r"[^0-9]"), "")) ?? 1;
     final int maxNum = characterLen[characterName] ?? 1;
     if (charNum < 1 || charNum > maxNum) {
       charNum = 1;
     }
 
     // 3. 确定背景图片路径并从缓存加载
-    final String charPath = "assets/characters/$characterName/$characterName$charNum.png";
-    
+    final String charPath =
+        "assets/characters/$characterName/$characterName$charNum.png";
+
     if (!_imageCache.containsKey(charPath)) {
       // 内存管理：缓存超过 30 张图片时移除最旧的一张 (FIFO)
       if (_imageCache.length >= 30) {
         _imageCache.remove(_imageCache.keys.first);
       }
-      
+
       try {
         final bgImageData = await rootBundle.load(charPath);
         _imageCache[charPath] = bgImageData.buffer.asUint8List();
@@ -1117,12 +1120,15 @@ class PjskGenerator {
         if (kDebugMode) print("Error loading image $charPath: $e");
         // 如果特定编号失败，回退到 1.png
         try {
-          final fallbackPath = "assets/characters/$characterName/${characterName}1.png";
+          final fallbackPath =
+              "assets/characters/$characterName/${characterName}1.png";
           final bgImageData = await rootBundle.load(fallbackPath);
           _imageCache[charPath] = bgImageData.buffer.asUint8List();
         } catch (e2) {
           // 极致回退
-          final bgImageData = await rootBundle.load("assets/characters/miku/miku1.png");
+          final bgImageData = await rootBundle.load(
+            "assets/characters/miku/miku1.png",
+          );
           _imageCache[charPath] = bgImageData.buffer.asUint8List();
         }
       }
@@ -1130,26 +1136,20 @@ class PjskGenerator {
     final Uint8List bgImageBytes = _imageCache[charPath]!;
 
     // 4. 预加载所有需要的字体（带缓存）
+    final availableFonts = fonts;
     for (var layer in layers) {
-      if (!_fontCache.containsKey(layer.font)) {
-        final int fontIndex = layer.font.clamp(0, fonts.length - 1);
-        final String fontFamilyName = fonts[fontIndex];
-        final String fontAssetPath = "Fonts/$fontFamilyName.ttf";
+      if (availableFonts.isEmpty) break;
+      final int fontIndex = layer.font.clamp(0, availableFonts.length - 1);
+      final String fontName = availableFonts[fontIndex];
+      if (fontName == FontManager.systemFontName) continue;
+      if (!_fontCache.containsKey(fontName)) {
         try {
-          final ByteData fontData = await rootBundle.load(fontAssetPath);
-          final bytes = fontData.buffer.asUint8List();
-          if (bytes.isNotEmpty) {
-            _fontCache[layer.font] = bytes;
+          final bytes = await FontManager.instance.loadFontBytes(fontName);
+          if (bytes != null && bytes.isNotEmpty) {
+            _fontCache[fontName] = bytes;
           }
         } catch (e) {
-          if (kDebugMode) print("Error loading font $fontAssetPath: $e");
-          // 如果备用字体也失败，将不再尝试加载该索引
-          if (layer.font != 0) {
-             try {
-               final fallbackData = await rootBundle.load("Fonts/${fonts[0]}.ttf");
-               _fontCache[layer.font] = fallbackData.buffer.asUint8List();
-             } catch (_) {}
-          }
+          if (kDebugMode) print("Error loading font $fontName: $e");
         }
       }
     }
@@ -1157,18 +1157,28 @@ class PjskGenerator {
     // 5. 准备渲染层
     List<TextOverlayLayer> renderLayers =
         layers.map((l) {
-          final int fontIndex = l.font.clamp(0, fonts.length - 1);
+          String fontName = '';
+          Uint8List fontBytes = Uint8List(0);
+          if (availableFonts.isNotEmpty) {
+            final int fontIndex = l.font.clamp(0, availableFonts.length - 1);
+            final selected = availableFonts[fontIndex];
+            if (selected != FontManager.systemFontName) {
+              fontName = selected;
+              fontBytes = _fontCache[fontName] ?? Uint8List(0);
+            }
+          }
           return TextOverlayLayer(
             content: l.content,
-            fontFamilyName: fonts[fontIndex],
-            fontBytes: _fontCache[l.font] ?? Uint8List(0),
+            fontFamilyName: fontName,
+            fontBytes: fontBytes,
             pos: l.pos,
             lean: l.lean,
             fontSize: l.fontSize,
             edgeSize: l.edgeSize,
-            color: l.useCustomColor 
-                ? l.customColor 
-                : (characterColor[characterName] ?? Colors.pink),
+            color:
+                l.useCustomColor
+                    ? l.customColor
+                    : (characterColor[characterName] ?? Colors.pink),
           );
         }).toList();
 

@@ -21,7 +21,6 @@ dependencies:
   share_plus: ^11.0.0
   shared_preferences: ^2.2.3
   url_launcher: ^6.3.2
-  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -59,18 +58,11 @@ flutter:
     - assets/characters/shizuku/
     - assets/characters/touya/
     - assets/characters/tsukasa/
-    - Fonts/ShangShouFangTangTi.ttf
-    - Fonts/YurukaStd.ttf
 
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon.png"
-  web:
-    generate: true
-    image_path: "assets/icon.png"
-    background_color: "#D481A9"
-    theme_color: "#39C5BB"
   windows:
     generate: true
     image_path: "assets/icon.png"

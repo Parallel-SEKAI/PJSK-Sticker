@@ -1,0 +1,21 @@
+repos:
+  - repo: local
+    hooks:
+      - id: dart-format
+        name: Dart Format
+        entry: dart format
+        language: system
+        types: [dart]
+        pass_filenames: true
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+
+ci:
+  skip: [dart-format]
+  autofix_commit_msg: "[pre-commit.ci] auto fixes from pre-commit hooks"
+  autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"

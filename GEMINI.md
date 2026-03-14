@@ -52,7 +52,7 @@
 
 ## 5. Naming & Coding Conventions
 - **Language Style**: Follows [Effective Dart](https://dart.dev/guides/language/effective-dart) (camelCase for variables, PascalCase for classes).
-- **Architecture**: **Layer-first**. 
+- **Architecture**: **Layer-first**.
   - **Data/Logic**: Isolated in `PjskGenerator` and `ImageTextOverlay`.
   - **UI**: Managed via `StatefulWidget` using local `setState` for high-frequency updates (like position sliders).
 - **State Persistence**: User progress is automatically serialized to JSON and stored via `SharedPreferences`.
@@ -85,16 +85,16 @@
 3. **Configuration Sharing**: The app generates a URL containing a Base64-encoded or JSON-encoded representation of the layers, allowing users to share their "recipes".
 
 ## 8. Agent Development Instructions (AI Context)
-- **Error Handling**: 
+- **Error Handling**:
   - Wrap all asset loading and file I/O in `try-catch` blocks.
   - Use `ScaffoldMessenger` to provide user feedback for failures.
-- **State Management**: 
+- **State Management**:
   - Keep using `setState` for local UI state in `StickerPage`.
   - For new global features, use `SharedPreferences` for persistence.
-- **UI Consistency**: 
+- **UI Consistency**:
   - Always use `Theme.of(context).colorScheme` to ensure Material 3 compatibility.
   - New settings should be added within `ExpansionTile` widgets to maintain a clean layout.
-- **Platform Specifics**: 
+- **Platform Specifics**:
   - Use `kIsWeb` and `Platform.is...` checks for file-saving logic.
   - Ensure `web_utils.dart` and `web_utils_stub.dart` are updated if adding new web-specific features.
 - **Testing**:

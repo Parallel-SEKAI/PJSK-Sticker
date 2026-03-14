@@ -2,6 +2,7 @@ import "dart:math";
 import "dart:ui" as ui;
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+import "package:pjsk_sticker/font_manager.dart";
 
 class TextOverlayLayer {
   final String content;
@@ -72,7 +73,12 @@ class ImageTextOverlay {
     Uint8List fontBytes,
     String fontFamilyName,
   ) async {
+    // 如果已经被 FontManager 或本类注册过，跳过
     if (_loadedFonts.contains(fontFamilyName)) return;
+    if (FontManager.instance.isFontRegistered(fontFamilyName)) {
+      _loadedFonts.add(fontFamilyName);
+      return;
+    }
 
     if (_fontLoadFutures.containsKey(fontFamilyName)) {
       return _fontLoadFutures[fontFamilyName];
@@ -80,8 +86,13 @@ class ImageTextOverlay {
 
     final future = Future(() async {
       try {
+        final byteData = ByteData.view(
+          fontBytes.buffer,
+          fontBytes.offsetInBytes,
+          fontBytes.lengthInBytes,
+        );
         final fontProvider = FontLoader(fontFamilyName)
-          ..addFont(Future.value(ByteData.view(fontBytes.buffer)));
+          ..addFont(Future.value(byteData));
         await fontProvider.load();
         _loadedFonts.add(fontFamilyName);
       } finally {

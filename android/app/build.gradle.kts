@@ -58,7 +58,7 @@ android {
     buildTypes {
         getByName("release") {
             // 只有在签名配置有效的情况下才使用它
-            signingConfig = if (signingConfigs["release"]?.keyAlias != null && 
+            signingConfig = if (signingConfigs["release"]?.keyAlias != null &&
                                signingConfigs["release"]?.storeFile != null) {
                 signingConfigs["release"]
             } else {
