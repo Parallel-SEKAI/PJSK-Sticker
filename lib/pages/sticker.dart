@@ -6,12 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:pasteboard/pasteboard.dart';
-import 'package:pjsk_sticker/pages/about.dart';
+import 'package:pjsk_sticker/pages/settings.dart';
 import 'package:pjsk_sticker/sticker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pjsk_sticker/web_utils.dart'
-    if (dart.library.io) 'package:pjsk_sticker/web_utils_stub.dart';
 
 class StickerPage extends StatefulWidget {
   const StickerPage({super.key});
@@ -217,6 +215,7 @@ class _StickerPageState extends State<StickerPage> {
     _createSticker();
   }
 
+  // ignore: unused_element
   Future<void> _exportImportConfig() async {
     if (!mounted) return;
     final TextEditingController configController = TextEditingController(
@@ -326,31 +325,27 @@ class _StickerPageState extends State<StickerPage> {
   Future<void> _handleImageTap() async {
     if (_byteData == null) return;
     try {
-      if (kIsWeb) {
-        downloadImageWeb(_byteData!);
-      } else {
-        final path =
-            Platform.isAndroid
-                ? '/storage/emulated/0/Pictures/pjsk_sticker/pjsk_${DateTime.now().millisecondsSinceEpoch}.png'
-                : 'pjsk_sticker/pjsk_${DateTime.now().millisecondsSinceEpoch}.png';
-        final file = File(path);
-        await file.create(recursive: true);
-        await file.writeAsBytes(_byteData!);
-        if (Platform.isAndroid) {
-          await SharePlus.instance.share(
-            ShareParams(files: [XFile.fromData(_byteData!, path: file.path)]),
-          );
-        } else if (Platform.isWindows) {
-          await Process.run('explorer.exe', [
-            '/select,${file.path.replaceAll('/', '\\')}',
-          ]);
-          Pasteboard.writeFiles([file.path.replaceAll('/', '\\')]);
-        }
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(Platform.isAndroid ? '已保存到相册' : '已复制并保存')),
-          );
-        }
+      final path =
+          Platform.isAndroid
+              ? '/storage/emulated/0/Pictures/pjsk_sticker/pjsk_${DateTime.now().millisecondsSinceEpoch}.png'
+              : 'pjsk_sticker/pjsk_${DateTime.now().millisecondsSinceEpoch}.png';
+      final file = File(path);
+      await file.create(recursive: true);
+      await file.writeAsBytes(_byteData!);
+      if (Platform.isAndroid) {
+        await SharePlus.instance.share(
+          ShareParams(files: [XFile.fromData(_byteData!, path: file.path)]),
+        );
+      } else if (Platform.isWindows) {
+        await Process.run('explorer.exe', [
+          '/select,${file.path.replaceAll('/', '\\')}',
+        ]);
+        Pasteboard.writeFiles([file.path.replaceAll('/', '\\')]);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(Platform.isAndroid ? '已保存到相册' : '已复制并保存')),
+        );
       }
     } catch (e) {
       if (kDebugMode) print(e);
@@ -987,21 +982,22 @@ class _StickerPageState extends State<StickerPage> {
               onPressed: _showResetDialog,
               tooltip: "重置",
             ),
-            SizedBox.shrink(
-              child: IconButton(
-                icon: const Icon(Icons.share),
-                onPressed: _exportImportConfig,
-                tooltip: "分享配置",
-              ),
-            ),
+            // IconButton(
+            //   icon: const Icon(Icons.share),
+            //   onPressed: _exportImportConfig,
+            //   tooltip: "分享配置",
+            // ),
             IconButton(
-              icon: const Icon(Icons.info_outline),
-              onPressed:
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (ctx) => const AboutPage()),
-                  ),
-              tooltip: "关于",
+              icon: const Icon(Icons.settings),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (ctx) => const SettingsPage()),
+                );
+                setState(() {});
+                _createSticker();
+              },
+              tooltip: "设置",
             ),
           ],
         ),
@@ -1093,9 +1089,9 @@ class _StickerPageState extends State<StickerPage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: DropdownButtonFormField<int>(
-            key: ValueKey("font_${layer.id}"),
+            key: ValueKey("font_${layer.id}_${PjskGenerator.fonts.length}"),
             decoration: const InputDecoration(labelText: '字体'),
-            initialValue: layer.font,
+            initialValue: layer.font.clamp(0, PjskGenerator.fonts.length - 1),
             items: [
               for (int i = 0; i < PjskGenerator.fonts.length; i++)
                 DropdownMenuItem(value: i, child: Text(PjskGenerator.fonts[i])),
