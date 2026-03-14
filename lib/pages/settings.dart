@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:pjsk_sticker/l10n/app_localizations.dart';
 import 'package:pjsk_sticker/pages/font_settings.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -64,7 +65,11 @@ class _SettingsPageState extends State<SettingsPage> {
         Clipboard.setData(ClipboardData(text: message));
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${message ?? uris.first} 链接打开失败')),
+        SnackBar(
+          content: Text(
+            S.of(context).linkOpenFailed(message ?? uris.first.toString()),
+          ),
+        ),
       );
       await launchUrl(uris.first);
     }
@@ -72,13 +77,14 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text("设置")),
+      appBar: AppBar(title: Text(s.settings)),
       body: ListView(
         children: [
           ListTile(
             leading: const Icon(Icons.font_download_outlined),
-            title: const Text("字体管理"),
+            title: Text(s.fontManagement),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.push(
@@ -91,7 +97,7 @@ class _SettingsPageState extends State<SettingsPage> {
           // --- 关于 ---
           ListTile(
             title: Text(
-              "关于",
+              s.about,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
@@ -107,7 +113,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           ListTile(
-            title: const Text("版本"),
+            title: Text(s.version),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -125,7 +131,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           ListTile(
-            title: const Text("开发"),
+            title: Text(s.developer),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -155,7 +161,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           ListTile(
-            title: const Text("QQ 群聊"),
+            title: Text(s.qqGroup),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -168,7 +174,7 @@ class _SettingsPageState extends State<SettingsPage> {
               if (qq == null) {
                 ScaffoldMessenger.of(
                   context,
-                ).showSnackBar(const SnackBar(content: Text("正在获取QQ群号")));
+                ).showSnackBar(SnackBar(content: Text(s.fetchingQQGroup)));
               } else {
                 toUris([
                   Uri.parse(
@@ -183,21 +189,21 @@ class _SettingsPageState extends State<SettingsPage> {
           // --- 赞赏 ---
           ListTile(
             title: Text(
-              "赞赏",
+              s.appreciation,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
             ),
           ),
           ListTile(
-            title: const Text("微信赞赏码"),
+            title: Text(s.wechatQR),
             trailing: const Icon(Icons.chevron_right, size: 18),
             onTap: () {
               showAdaptiveDialog(
                 context: context,
-                builder: (context) {
+                builder: (dialogContext) {
                   return AlertDialog(
-                    title: const Text("微信赞赏码"),
+                    title: Text(s.wechatQR),
                     content: Image.asset(
                       "assets/wechat.png",
                       width: 200,
@@ -215,18 +221,20 @@ class _SettingsPageState extends State<SettingsPage> {
                                   "assets/wechat.png",
                                 )).buffer.asUint8List();
                             file.writeAsBytesSync(bytes);
-                            if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("已保存到 Pictures/wechat.png"),
+                            if (!dialogContext.mounted) return;
+                            ScaffoldMessenger.of(dialogContext).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  s.savedToPath("Pictures/wechat.png"),
+                                ),
                               ),
                             );
                           },
-                          child: const Text("保存"),
+                          child: Text(s.save),
                         ),
                       TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text("关闭"),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: Text(s.close),
                       ),
                     ],
                   );
@@ -235,7 +243,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           ListTile(
-            title: const Text("爱发电"),
+            title: Text(s.afdian),
             trailing: const Icon(Icons.chevron_right, size: 18),
             onTap: () {
               toUris([Uri.parse("https://afdian.com/a/Parallel-SEKAI")]);
@@ -245,7 +253,7 @@ class _SettingsPageState extends State<SettingsPage> {
           // --- 致谢 ---
           ListTile(
             title: Text(
-              "致谢",
+              s.credits,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),

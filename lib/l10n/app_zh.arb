@@ -1,0 +1,135 @@
+{
+  "@@locale": "zh",
+
+  "appTitle": "PJSK Sticker",
+
+  "about": "关于",
+  "close": "关闭",
+  "cancel": "取消",
+  "confirm": "确定",
+  "delete": "删除",
+  "save": "保存",
+  "share": "分享",
+  "copy": "复制",
+  "paste": "粘贴",
+  "importAction": "导入",
+  "copied": "已复制",
+  "reset": "重置",
+  "settings": "设置",
+  "random": "随机",
+
+  "characterSelect": "角色选择",
+  "selectSticker": "选择贴纸",
+  "confirmRandomCharacter": "确认选择随机角色",
+  "teamRandom": "全队随机",
+  "stickerNotFound": "未找到贴纸",
+
+  "layerManagement": "图层管理",
+  "add": "添加",
+  "layerDefault": "图层 {index}",
+  "@layerDefault": {
+    "placeholders": {
+      "index": { "type": "int" }
+    }
+  },
+  "newLayerContent": "新文字层",
+  "editText": "编辑文字",
+  "atLeastOneLayer": "至少需要保留一个图层",
+  "deleteLayer": "删除图层",
+  "confirmDeleteLayer": "确认要删除 \"{name}\" 吗？此操作不可撤销。",
+  "@confirmDeleteLayer": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "confirmDelete": "确认删除",
+
+  "textStyle": "文字样式",
+  "font": "字体",
+  "fontSize": "字体大小",
+  "rotationAngle": "旋转角度",
+  "positionAdjust": "位置调整",
+  "xOffset": "X 轴偏移",
+  "yOffset": "Y 轴偏移",
+  "advancedStyle": "高级样式",
+  "strokeWidth": "描边粗细",
+  "customColor": "自定义颜色",
+  "customColorHint": "启用后将覆盖角色默认色",
+  "textColor": "文字颜色",
+  "pickColor": "选择颜色",
+
+  "exportImage": "导出图片",
+  "savedToGallery": "已保存到相册",
+  "copiedAndSaved": "已复制并保存",
+
+  "resetAllParams": "重置所有参数？",
+  "resetAllParamsDesc": "这将会清除当前所有文字内容、位置和样式设置，并恢复到默认状态。",
+  "confirmReset": "确认重置",
+
+  "exportImportConfig": "导出/导入配置",
+  "exportImportHint": "导出图片请直接点击图片，点击下方按钮导出配置，或粘贴配置后点击导入",
+  "pasteConfigHint": "粘贴配置内容…",
+  "shareConfigTitle": "分享 PJSK Sticker 配置",
+  "shareEmojiText": "分享表情包: {url}\n使用 https://github.com/Parallel-SEKAI/PJSK-Sticker/ 制作",
+  "@shareEmojiText": {
+    "placeholders": {
+      "url": { "type": "String" }
+    }
+  },
+  "configFormatError": "配置格式错误",
+
+  "fontManagement": "字体管理",
+  "enterFontName": "请输入字体名称",
+  "enterDownloadUrl": "请输入下载地址",
+  "urlFormatError": "URL 格式不正确",
+  "fontDownloadSuccess": "字体 \"{name}\" 下载成功",
+  "@fontDownloadSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "downloadFailed": "下载失败: {error}",
+  "@downloadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "deleteFont": "删除字体",
+  "confirmDeleteFont": "确认删除字体 \"{name}\" 吗？",
+  "@confirmDeleteFont": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "noFontsHint": "暂无字体，请在下方添加",
+  "addFont": "添加字体",
+  "fontName": "字体名称",
+  "downloadUrl": "下载地址",
+  "fontFormatHint": "仅支持 .ttf 和 .otf 格式，不支持 woff/woff2",
+  "downloading": "下载中...",
+  "downloadAndAdd": "下载并添加",
+
+  "systemDefault": "系统默认",
+  "fontPreviewText": "わんだほーい",
+
+  "version": "版本",
+  "developer": "开发",
+  "qqGroup": "QQ 群聊",
+  "fetchingQQGroup": "正在获取QQ群号",
+  "appreciation": "赞赏",
+  "wechatQR": "微信赞赏码",
+  "afdian": "爱发电",
+  "credits": "致谢",
+  "savedToPath": "已保存到 {path}",
+  "@savedToPath": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "linkOpenFailed": "{link} 链接打开失败",
+  "@linkOpenFailed": {
+    "placeholders": {
+      "link": { "type": "String" }
+    }
+  }
+}

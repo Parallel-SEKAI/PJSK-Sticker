@@ -44,6 +44,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Generated l10n files
+lib/l10n/app_localizations*.dart
+
 key.jks
 key.properties
 .narrafork/

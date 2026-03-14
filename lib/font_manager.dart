@@ -36,7 +36,7 @@ class FontManager {
 
   bool get hasFonts => _fonts.any((f) => f.filePath != null);
 
-  static const String systemFontName = '系统默认';
+  static const String systemFontName = '__system__';
 
   final Set<String> _registeredFonts = {};
 
@@ -136,7 +136,9 @@ class FontManager {
       }
     }
     if (ext.isNotEmpty && !_supportedExts.contains(ext)) {
-      throw Exception('不支持的字体格式 ($ext)，仅支持 .ttf 和 .otf');
+      throw Exception(
+        'Unsupported font format ($ext), only .ttf and .otf are supported',
+      );
     }
     if (ext.isEmpty) {
       ext = '.ttf';
@@ -144,12 +146,12 @@ class FontManager {
 
     final response = await http.get(Uri.parse(url));
     if (response.statusCode != 200) {
-      throw Exception('下载失败: HTTP ${response.statusCode}');
+      throw Exception('HTTP ${response.statusCode}');
     }
 
     final bytes = response.bodyBytes;
     if (!_isValidFontHeader(bytes)) {
-      throw Exception('不是有效的 TTF/OTF 字体文件（可能是 woff/woff2 等不支持的格式）');
+      throw Exception('Invalid font file (not TTF/OTF, possibly woff/woff2)');
     }
 
     final fontDir = await _getFontDir();
