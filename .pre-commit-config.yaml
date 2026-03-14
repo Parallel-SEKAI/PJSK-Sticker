@@ -16,5 +16,6 @@ repos:
       - id: check-yaml
 
 ci:
+  skip: [dart-format]
   autofix_commit_msg: "[pre-commit.ci] auto fixes from pre-commit hooks"
   autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
