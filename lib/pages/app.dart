@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:pjsk_sticker/l10n/app_localizations.dart';
 import 'package:pjsk_sticker/pages/sticker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,7 +32,7 @@ class _AppPageState extends State<AppPage> {
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: Text("关于"),
+                title: Text(S.of(context).about),
                 content: SingleChildScrollView(
                   padding: EdgeInsets.all(8),
                   child: Text(utf8.decode(base64Decode(about)), softWrap: true),
@@ -41,7 +42,7 @@ class _AppPageState extends State<AppPage> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: Text("关闭"),
+                    child: Text(S.of(context).close),
                   ),
                 ],
               );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pjsk_sticker/font_manager.dart';
+import 'package:pjsk_sticker/l10n/app_localizations.dart';
 
 class FontSettingsPage extends StatefulWidget {
   const FontSettingsPage({super.key});
@@ -36,19 +37,20 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
   }
 
   Future<void> _addFont() async {
+    final s = S.of(context);
     final name = _nameController.text.trim();
     final url = _urlController.text.trim();
 
     if (name.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('请输入字体名称')));
+      ).showSnackBar(SnackBar(content: Text(s.enterFontName)));
       return;
     }
     if (url.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('请输入下载地址')));
+      ).showSnackBar(SnackBar(content: Text(s.enterDownloadUrl)));
       return;
     }
 
@@ -56,7 +58,7 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
     if (uri == null || !uri.hasScheme) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('URL 格式不正确')));
+      ).showSnackBar(SnackBar(content: Text(s.urlFormatError)));
       return;
     }
 
@@ -67,7 +69,7 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('字体 "$name" 下载成功')));
+        ).showSnackBar(SnackBar(content: Text(s.fontDownloadSuccess(name))));
         _nameController.clear();
         _urlController.clear();
         setState(() {});
@@ -76,7 +78,7 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('下载失败: $e')));
+        ).showSnackBar(SnackBar(content: Text(s.downloadFailed(e.toString()))));
       }
     } finally {
       if (mounted) setState(() => _downloading = false);
@@ -84,21 +86,22 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
   }
 
   Future<void> _deleteFont(FontInfo font) async {
+    final s = S.of(context);
     final confirm = await showAdaptiveDialog<bool>(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('删除字体'),
-            content: Text('确认删除字体 "${font.name}" 吗？'),
+            title: Text(s.deleteFont),
+            content: Text(s.confirmDeleteFont(font.name)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+                child: Text(s.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(
-                  '删除',
+                  s.delete,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
@@ -114,20 +117,21 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context);
     final fonts = FontManager.instance.fonts;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("字体管理")),
+      appBar: AppBar(title: Text(s.fontManagement)),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 64),
         children: [
           if (fonts.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(32),
+            Padding(
+              padding: const EdgeInsets.all(32),
               child: Center(
                 child: Text(
-                  '暂无字体，请在下方添加',
-                  style: TextStyle(color: Colors.grey),
+                  s.noFontsHint,
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ),
             )
@@ -136,7 +140,7 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
           const Divider(),
           ListTile(
             title: Text(
-              "添加字体",
+              s.addFont,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
@@ -146,10 +150,10 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: '字体名称',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.label_outline),
+              decoration: InputDecoration(
+                labelText: s.fontName,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.label_outline),
               ),
             ),
           ),
@@ -157,11 +161,11 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               controller: _urlController,
-              decoration: const InputDecoration(
-                labelText: '下载地址',
-                helperText: '仅支持 .ttf 和 .otf 格式，不支持 woff/woff2',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.link),
+              decoration: InputDecoration(
+                labelText: s.downloadUrl,
+                helperText: s.fontFormatHint,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.link),
               ),
             ),
           ),
@@ -180,7 +184,7 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
                         ),
                       )
                       : const Icon(Icons.download),
-              label: Text(_downloading ? '下载中...' : '下载并添加'),
+              label: Text(_downloading ? s.downloading : s.downloadAndAdd),
             ),
           ),
         ],
@@ -190,6 +194,7 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
 
   Widget _buildFontTile(FontInfo font) {
     final bool downloaded = font.filePath != null;
+    final s = S.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -216,7 +221,7 @@ class _FontSettingsPageState extends State<FontSettingsPage> {
           Padding(
             padding: const EdgeInsets.only(left: 72, right: 16, bottom: 12),
             child: Text(
-              'わんだほーい',
+              s.fontPreviewText,
               style: TextStyle(fontFamily: font.name, fontSize: 24),
             ),
           ),

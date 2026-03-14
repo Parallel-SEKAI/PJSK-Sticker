@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:pjsk_sticker/font_manager.dart';
+import 'package:pjsk_sticker/l10n/app_localizations.dart';
 import 'package:pjsk_sticker/pages/app.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -44,6 +45,8 @@ class MyApp extends StatelessWidget {
 
         return MaterialApp(
           title: 'PJSK Sticker',
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           theme: ThemeData(colorScheme: lightColorScheme),
           darkTheme: ThemeData(colorScheme: darkColorScheme),
           home: AppPage(),

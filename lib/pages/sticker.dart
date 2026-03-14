@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:pasteboard/pasteboard.dart';
+import 'package:pjsk_sticker/font_manager.dart';
+import 'package:pjsk_sticker/l10n/app_localizations.dart';
 import 'package:pjsk_sticker/pages/settings.dart';
 import 'package:pjsk_sticker/sticker.dart';
 import 'package:share_plus/share_plus.dart';
@@ -18,6 +20,8 @@ class StickerPage extends StatefulWidget {
 }
 
 class _StickerPageState extends State<StickerPage> {
+  static const String kRandom = '__random__';
+
   // --- 1. 常量与 Keys ---
   static final Uri _apiBaseUrl = Uri.parse(
     "https://api.parallel-sekai.org/pjsk-sticker",
@@ -28,7 +32,7 @@ class _StickerPageState extends State<StickerPage> {
   );
 
   late final Map<String, GlobalKey> _groupKeys = {
-    "随机": GlobalKey(),
+    kRandom: GlobalKey(),
     for (var g in PjskGenerator.groups) g: GlobalKey(),
   };
   late final Map<String, GlobalKey> _characterKeys = {
@@ -82,6 +86,10 @@ class _StickerPageState extends State<StickerPage> {
       _selectedCharacter = prefs.getString('selectedCharacter') ?? "emu";
       _selectedSticker = prefs.getInt('selectedSticker') ?? 12;
       _character = prefs.getString('character') ?? "emu";
+
+      // 迁移旧的 "随机" 值
+      if (_character == "随机") _character = kRandom;
+      if (_selectedGroup == "随机") _selectedGroup = kRandom;
 
       final String? layersJson = prefs.getString('layers');
       if (layersJson != null && layersJson.isNotEmpty) {
@@ -225,18 +233,18 @@ class _StickerPageState extends State<StickerPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text("导出/导入配置"),
+            title: Text(S.of(context).exportImportConfig),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("导出图片请直接点击图片，点击下方按钮导出配置，或粘贴配置后点击导入"),
+                Text(S.of(context).exportImportHint),
                 const SizedBox(height: 8),
                 TextField(
                   controller: configController,
                   maxLines: 5,
-                  decoration: const InputDecoration(
-                    hintText: "粘贴配置内容…",
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    hintText: S.of(context).pasteConfigHint,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
               ],
@@ -247,12 +255,13 @@ class _StickerPageState extends State<StickerPage> {
                   onPressed:
                       () async => await SharePlus.instance.share(
                         ShareParams(
-                          text:
-                              '分享表情包: ${configController.text}\n使用 https://github.com/Parallel-SEKAI/PJSK-Sticker/ 制作',
-                          title: "分享 PJSK Sticker 配置",
+                          text: S
+                              .of(context)
+                              .shareEmojiText(configController.text),
+                          title: S.of(context).shareConfigTitle,
                         ),
                       ),
-                  child: const Text("分享"),
+                  child: Text(S.of(context).share),
                 ),
               TextButton(
                 onPressed: () {
@@ -260,9 +269,9 @@ class _StickerPageState extends State<StickerPage> {
                   Clipboard.setData(ClipboardData(text: configController.text));
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(const SnackBar(content: Text("已复制")));
+                  ).showSnackBar(SnackBar(content: Text(S.of(context).copied)));
                 },
-                child: const Text("复制"),
+                child: Text(S.of(context).copy),
               ),
               TextButton(
                 onPressed: () async {
@@ -274,7 +283,7 @@ class _StickerPageState extends State<StickerPage> {
                     if (match != null) configController.text = match.group(0)!;
                   }
                 },
-                child: const Text("粘贴"),
+                child: Text(S.of(context).paste),
               ),
               TextButton(
                 onPressed: () {
@@ -285,13 +294,15 @@ class _StickerPageState extends State<StickerPage> {
                       Navigator.pop(context);
                       _reloadFromUri(uri);
                     } catch (_) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(const SnackBar(content: Text("配置格式错误")));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(S.of(context).configFormatError),
+                        ),
+                      );
                     }
                   }
                 },
-                child: const Text("导入"),
+                child: Text(S.of(context).importAction),
               ),
             ],
           ),
@@ -308,7 +319,7 @@ class _StickerPageState extends State<StickerPage> {
 
   Future<void> _createSticker() async {
     await _savePreferences();
-    String char = _character != "随机" ? _character : "";
+    String char = _character != kRandom ? _character : "";
     if (PjskGenerator.groups.contains(char)) {
       final members = PjskGenerator.groupMembers[char]!;
       char = members[DateTime.now().millisecond % members.length];
@@ -344,7 +355,13 @@ class _StickerPageState extends State<StickerPage> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(Platform.isAndroid ? '已保存到相册' : '已复制并保存')),
+          SnackBar(
+            content: Text(
+              Platform.isAndroid
+                  ? S.of(context).savedToGallery
+                  : S.of(context).copiedAndSaved,
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -398,7 +415,7 @@ class _StickerPageState extends State<StickerPage> {
 
   void _addLayer() {
     setState(() {
-      final newLayer = TextLayer(content: "新文字层");
+      final newLayer = TextLayer(content: S.of(context).newLayerContent);
       _layers.add(newLayer);
       _currentLayerId = newLayer.id;
       _contextController.text = _currentLayer.content;
@@ -410,7 +427,7 @@ class _StickerPageState extends State<StickerPage> {
     if (_layers.length <= 1) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("至少需要保留一个图层")));
+      ).showSnackBar(SnackBar(content: Text(S.of(context).atLeastOneLayer)));
       return;
     }
 
@@ -418,7 +435,7 @@ class _StickerPageState extends State<StickerPage> {
     final layerText = layerToRemove.content;
     final displayName =
         layerText.isEmpty
-            ? "图层 ${index + 1}"
+            ? S.of(context).layerDefault(index + 1)
             : (layerText.length > 10
                 ? "${layerText.substring(0, 10)}..."
                 : layerText);
@@ -427,12 +444,12 @@ class _StickerPageState extends State<StickerPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('删除图层'),
-            content: Text('确认要删除 "$displayName" 吗？此操作不可撤销。'),
+            title: Text(S.of(context).deleteLayer),
+            content: Text(S.of(context).confirmDeleteLayer(displayName)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('取消'),
+                child: Text(S.of(context).cancel),
               ),
               TextButton(
                 onPressed: () {
@@ -447,7 +464,7 @@ class _StickerPageState extends State<StickerPage> {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  '确认删除',
+                  S.of(context).confirmDelete,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
@@ -468,12 +485,12 @@ class _StickerPageState extends State<StickerPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('重置所有参数？'),
-            content: const Text('这将会清除当前所有文字内容、位置和样式设置，并恢复到默认状态。'),
+            title: Text(S.of(context).resetAllParams),
+            content: Text(S.of(context).resetAllParamsDesc),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('取消'),
+                child: Text(S.of(context).cancel),
               ),
               TextButton(
                 onPressed: () {
@@ -481,7 +498,7 @@ class _StickerPageState extends State<StickerPage> {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  '确认重置',
+                  S.of(context).confirmReset,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
@@ -496,7 +513,7 @@ class _StickerPageState extends State<StickerPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('选择颜色'),
+            title: Text(S.of(context).pickColor),
             content: SingleChildScrollView(
               child: ColorPicker(
                 pickerColor: selected,
@@ -508,7 +525,7 @@ class _StickerPageState extends State<StickerPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('取消'),
+                child: Text(S.of(context).cancel),
               ),
               TextButton(
                 onPressed: () {
@@ -519,7 +536,7 @@ class _StickerPageState extends State<StickerPage> {
                   _createSticker();
                   Navigator.pop(context);
                 },
-                child: const Text('确定'),
+                child: Text(S.of(context).confirm),
               ),
             ],
           ),
@@ -528,8 +545,8 @@ class _StickerPageState extends State<StickerPage> {
 
   // --- 7. 角色选择器组件 ---
   Future<void> _selectCharacter1() async {
-    if (_character == "随机") {
-      _selectedGroup = "随机";
+    if (_character == kRandom) {
+      _selectedGroup = kRandom;
       _selectedCharacter = null;
     } else if (PjskGenerator.groups.contains(_character)) {
       _selectedGroup = _character;
@@ -611,7 +628,7 @@ class _StickerPageState extends State<StickerPage> {
           const SizedBox(height: 16),
           _buildGroupTabs(group, setModalState, ctx),
           const Divider(height: 16),
-          if (group != null && group != "随机") ...[
+          if (group != null && group != kRandom) ...[
             _buildCharacterTabs(group, character, setModalState, ctx),
             const Divider(height: 16),
           ],
@@ -619,15 +636,15 @@ class _StickerPageState extends State<StickerPage> {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                if (group == "随机" || group == null)
+                if (group == kRandom || group == null)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(32.0),
                       child: FilledButton.icon(
                         icon: const Icon(Icons.shuffle),
-                        label: const Text("确认选择随机角色"),
+                        label: Text(S.of(ctx).confirmRandomCharacter),
                         onPressed: () {
-                          setState(() => _character = "随机");
+                          setState(() => _character = kRandom);
                           _createSticker();
                           Navigator.pop(ctx);
                         },
@@ -638,7 +655,10 @@ class _StickerPageState extends State<StickerPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("选择贴纸", style: Theme.of(ctx).textTheme.titleSmall),
+                      Text(
+                        S.of(ctx).selectSticker,
+                        style: Theme.of(ctx).textTheme.titleSmall,
+                      ),
                       TextButton(
                         onPressed: () {
                           setState(() {
@@ -648,7 +668,7 @@ class _StickerPageState extends State<StickerPage> {
                           _createSticker();
                           Navigator.pop(ctx);
                         },
-                        child: const Text("随机"),
+                        child: Text(S.of(ctx).random),
                       ),
                     ],
                   ),
@@ -669,9 +689,9 @@ class _StickerPageState extends State<StickerPage> {
     StateSetter setModalState,
     BuildContext ctx,
   ) {
-    final List<String> all = ["随机", ...PjskGenerator.groups];
+    final List<String> all = [kRandom, ...PjskGenerator.groups];
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final key = _groupKeys[group ?? "随机"];
+      final key = _groupKeys[group ?? kRandom];
       if (key?.currentContext != null) {
         Scrollable.ensureVisible(
           key!.currentContext!,
@@ -687,28 +707,29 @@ class _StickerPageState extends State<StickerPage> {
       child: Row(
         children:
             all.map((g) {
-              final isSelected = (g == "随机" && group == null) || (g == group);
+              final isSelected =
+                  (g == kRandom && group == null) || (g == group);
               final color =
-                  g == "随机"
+                  g == kRandom
                       ? Theme.of(ctx).colorScheme.primary
                       : PjskGenerator.groupColor[g]!;
               return Padding(
                 key: _groupKeys[g],
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
-                  label: Text(g),
+                  label: Text(g == kRandom ? S.of(ctx).random : g),
                   selected: isSelected,
                   onSelected: (_) {
                     setModalState(() {
                       _selectedGroup = g;
-                      if (g != "随机") {
+                      if (g != kRandom) {
                         _selectedCharacter =
                             PjskGenerator.groupMembers[g]!.first;
                       }
                     });
                     setState(() {
                       _selectedGroup = g;
-                      if (g != "随机") {
+                      if (g != kRandom) {
                         _selectedCharacter =
                             PjskGenerator.groupMembers[g]!.first;
                       }
@@ -741,7 +762,7 @@ class _StickerPageState extends State<StickerPage> {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: ActionChip(
-              label: const Text("全队随机"),
+              label: Text(S.of(ctx).teamRandom),
               backgroundColor: (PjskGenerator.groupColor[group] ??
                       Theme.of(ctx).colorScheme.primary)
                   .withValues(alpha: 0.1),
@@ -786,7 +807,8 @@ class _StickerPageState extends State<StickerPage> {
   Widget _buildStickerGrid(String character, StateSetter setModalState) {
     final String name = PjskGenerator.characterMap[character] ?? "miku";
     final List<String> stickers = PjskGenerator.characterStickers[name] ?? [];
-    if (stickers.isEmpty) return const Center(child: Text("未找到贴纸"));
+    if (stickers.isEmpty)
+      return Center(child: Text(S.of(context).stickerNotFound));
 
     return GridView.builder(
       shrinkWrap: true,
@@ -913,7 +935,10 @@ class _StickerPageState extends State<StickerPage> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text("图层管理", style: Theme.of(context).textTheme.titleSmall),
+          child: Text(
+            S.of(context).layerManagement,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
         ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -924,7 +949,7 @@ class _StickerPageState extends State<StickerPage> {
                 padding: const EdgeInsets.only(right: 8),
                 child: ActionChip(
                   avatar: const Icon(Icons.add, size: 18),
-                  label: const Text("添加"),
+                  label: Text(S.of(context).add),
                   onPressed: _addLayer,
                 ),
               ),
@@ -939,7 +964,7 @@ class _StickerPageState extends State<StickerPage> {
                     child: ChoiceChip(
                       label: Text(
                         text.isEmpty
-                            ? "图层 ${index + 1}"
+                            ? S.of(context).layerDefault(index + 1)
                             : (text.length > 8
                                 ? "${text.substring(0, 8)}..."
                                 : text),
@@ -975,12 +1000,12 @@ class _StickerPageState extends State<StickerPage> {
       data: customTheme,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('PJSK Sticker'),
+          title: Text(S.of(context).appTitle),
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: _showResetDialog,
-              tooltip: "重置",
+              tooltip: S.of(context).reset,
             ),
             // IconButton(
             //   icon: const Icon(Icons.share),
@@ -997,7 +1022,7 @@ class _StickerPageState extends State<StickerPage> {
                 setState(() {});
                 _createSticker();
               },
-              tooltip: "设置",
+              tooltip: S.of(context).settings,
             ),
           ],
         ),
@@ -1026,8 +1051,10 @@ class _StickerPageState extends State<StickerPage> {
                         ],
                       ),
                     ),
-                    title: const Text('角色选择'),
-                    subtitle: Text(_character),
+                    title: Text(S.of(context).characterSelect),
+                    subtitle: Text(
+                      _character == kRandom ? S.of(context).random : _character,
+                    ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: _selectCharacter1,
                   ),
@@ -1038,7 +1065,7 @@ class _StickerPageState extends State<StickerPage> {
                     child: TextField(
                       controller: _contextController,
                       decoration: InputDecoration(
-                        labelText: '编辑文字',
+                        labelText: S.of(context).editText,
                         prefixIcon: const Icon(Icons.text_fields),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.clear),
@@ -1073,7 +1100,7 @@ class _StickerPageState extends State<StickerPage> {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _handleImageTap,
-          label: const Text('导出图片'),
+          label: Text(S.of(context).exportImage),
           icon: const Icon(Icons.download),
         ),
       ),
@@ -1083,18 +1110,25 @@ class _StickerPageState extends State<StickerPage> {
   Widget _buildStyleExpansionTile(TextLayer layer) {
     return ExpansionTile(
       leading: const Icon(Icons.palette_outlined),
-      title: const Text('文字样式'),
+      title: Text(S.of(context).textStyle),
       initiallyExpanded: true,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: DropdownButtonFormField<int>(
             key: ValueKey("font_${layer.id}_${PjskGenerator.fonts.length}"),
-            decoration: const InputDecoration(labelText: '字体'),
+            decoration: InputDecoration(labelText: S.of(context).font),
             initialValue: layer.font.clamp(0, PjskGenerator.fonts.length - 1),
             items: [
               for (int i = 0; i < PjskGenerator.fonts.length; i++)
-                DropdownMenuItem(value: i, child: Text(PjskGenerator.fonts[i])),
+                DropdownMenuItem(
+                  value: i,
+                  child: Text(
+                    PjskGenerator.fonts[i] == FontManager.systemFontName
+                        ? S.of(context).systemDefault
+                        : PjskGenerator.fonts[i],
+                  ),
+                ),
             ],
             onChanged: (v) {
               setState(() => layer.font = v!);
@@ -1103,7 +1137,7 @@ class _StickerPageState extends State<StickerPage> {
           ),
         ),
         _buildSliderTile(
-          label: '字体大小',
+          label: S.of(context).fontSize,
           value: layer.fontSize,
           min: 0,
           max: 100,
@@ -1113,7 +1147,7 @@ class _StickerPageState extends State<StickerPage> {
           },
         ),
         _buildSliderTile(
-          label: '旋转角度',
+          label: S.of(context).rotationAngle,
           value: layer.lean,
           min: -180,
           max: 180,
@@ -1130,10 +1164,10 @@ class _StickerPageState extends State<StickerPage> {
   Widget _buildPositionExpansionTile(TextLayer layer) {
     return ExpansionTile(
       leading: const Icon(Icons.open_with),
-      title: const Text('位置调整'),
+      title: Text(S.of(context).positionAdjust),
       children: [
         _buildSliderTile(
-          label: 'X 轴偏移',
+          label: S.of(context).xOffset,
           value: layer.pos.dx,
           min: -100,
           max: 300,
@@ -1144,7 +1178,7 @@ class _StickerPageState extends State<StickerPage> {
           },
         ),
         _buildSliderTile(
-          label: 'Y 轴偏移',
+          label: S.of(context).yOffset,
           value: layer.pos.dy,
           min: -100,
           max: 300,
@@ -1161,10 +1195,10 @@ class _StickerPageState extends State<StickerPage> {
   Widget _buildAdvancedExpansionTile(TextLayer layer) {
     return ExpansionTile(
       leading: const Icon(Icons.tune),
-      title: const Text('高级样式'),
+      title: Text(S.of(context).advancedStyle),
       children: [
         _buildSliderTile(
-          label: '描边粗细',
+          label: S.of(context).strokeWidth,
           value: layer.edgeSize.toDouble(),
           min: 0,
           max: 20,
@@ -1175,8 +1209,8 @@ class _StickerPageState extends State<StickerPage> {
           },
         ),
         SwitchListTile(
-          title: const Text('自定义颜色'),
-          subtitle: const Text('启用后将覆盖角色默认色'),
+          title: Text(S.of(context).customColor),
+          subtitle: Text(S.of(context).customColorHint),
           secondary: const Icon(Icons.format_color_fill),
           value: layer.useCustomColor,
           onChanged: (v) {
@@ -1195,7 +1229,7 @@ class _StickerPageState extends State<StickerPage> {
               border: Border.all(color: Theme.of(context).colorScheme.outline),
             ),
           ),
-          title: const Text('文字颜色'),
+          title: Text(S.of(context).textColor),
           trailing: Text(
             '#${layer.customColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
             style: const TextStyle(fontFamily: 'monospace'),
