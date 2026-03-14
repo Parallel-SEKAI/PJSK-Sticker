@@ -807,8 +807,9 @@ class _StickerPageState extends State<StickerPage> {
   Widget _buildStickerGrid(String character, StateSetter setModalState) {
     final String name = PjskGenerator.characterMap[character] ?? "miku";
     final List<String> stickers = PjskGenerator.characterStickers[name] ?? [];
-    if (stickers.isEmpty)
+    if (stickers.isEmpty) {
       return Center(child: Text(S.of(context).stickerNotFound));
+    }
 
     return GridView.builder(
       shrinkWrap: true,
