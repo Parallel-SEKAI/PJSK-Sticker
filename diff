@@ -1,0 +1,66 @@
+# Role: Commit Message Generator
+## Git Histories
+commit 51a6f62c3aa6e9e635fd55b993ee99ef90ed30ba
+Merge: d987266 0bdb42a
+Author: Rinne <904228000@qq.com>
+Date:   Sat Mar 14 17:54:37 2026 +0800
+
+    Merge pull request #22 from Parallel-SEKAI/feat/localization-and-i18n
+
+    feat: implement multi-language support (i18n)
+
+commit 0bdb42aca7b0e6f9e3315ec53b66bf533b7527e4
+Author: xiaocaoooo <904228000@qq.com>
+Date:   Sat Mar 14 17:48:11 2026 +0800
+
+    fix(ci): fix analyze issues
+
+commit a8b1ab5118bbbd4fad05da0b37d95d042f2ecd56
+Author: xiaocaoooo <904228000@qq.com>
+Date:   Sat Mar 14 17:39:50 2026 +0800
+
+    feat: implement multi-language support (i18n)
+
+    - Add l10n configuration and flutter_localizations dependency.
+    - Create ARB resource files for English, Japanese, and Chinese (Simplified/Traditional).
+    - Refactor UI components to use generated localization class (S) instead of hardcoded strings.
+    - Update FontManager to use language-agnostic internal constants.
+    - Configure .gitignore to exclude generated localization files.
+
+commit d98726677378df52ef385cd0095964249614d920
+Merge: 22bc43e d84e1bd
+Author: Rinne <904228000@qq.com>
+Date:   Sat Mar 14 13:44:56 2026 +0800
+
+    Merge pull request #21 from Parallel-SEKAI/feat/font-manager-and-custom-settings
+
+    feat: implement dynamic font management and refactor app settings
+
+commit d84e1bd4b1f10aa4d36f95637a11585905364499
+Author: xiaocaoooo <904228000@qq.com>
+Date:   Sat Mar 14 13:43:22 2026 +0800
+
+    fix(ci): skip dart format
+## Git Status
+ M android/app/build.gradle.kts
+ M android/gradle/wrapper/gradle-wrapper.properties
+ M android/settings.gradle.kts
+ M macos/Flutter/GeneratedPluginRegistrant.swift
+ M pubspec.lock
+ M pubspec.yaml
+## Git Diff
+## Task
+Analyze the staged changes and generate a professional Git branch name and a detailed multi-line commit message.
+### Guidelines:
+1. Branch Name: kebab-case (e.g., feat/login-logic).
+2. Commit Message Structure:
+   - Subject: <type>(<scope>): <short summary> (max 50 chars).
+   - Body: A detailed explanation of what changed and WHY (not how). Use bullet points if necessary. Wrap at 72 chars.
+3. Output Format: Wrap the results in the following tags for parsing:
+```
+type/content
+type(scope): subject
+
+- detailed change 1
+- detailed change 2
+```
