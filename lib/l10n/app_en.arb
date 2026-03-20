@@ -83,6 +83,7 @@
   "fontPreviewText": "わんだほーい",
 
   "version": "Version",
+  "buildTime": "Build Time",
   "developer": "Developer",
   "qqGroup": "QQ Group",
   "fetchingQQGroup": "Fetching QQ group number",

@@ -45,6 +45,28 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Resolve build metadata
+        run: |
+          set -euo pipefail
+          tag_name="${GITHUB_REF_NAME}"
+          if [[ "$tag_name" =~ ([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            build_name="${BASH_REMATCH[1]}"
+          else
+            echo "Tag '$tag_name' does not contain a version matching X.Y.Z." >&2
+            exit 1
+          fi
+
+          build_number="${GITHUB_RUN_NUMBER}"
+          app_version="${build_name}+${build_number}"
+          build_timestamp="$(date -u +%s)"
+
+          {
+            echo "BUILD_NAME=$build_name"
+            echo "BUILD_NUMBER=$build_number"
+            echo "APP_VERSION=$app_version"
+            echo "BUILD_TIMESTAMP=$build_timestamp"
+          } >> "$GITHUB_ENV"
+
       # Android 专属步骤：解码 Keystore
       - name: Decode Keystore
         if: matrix.platform == 'Android'
@@ -62,15 +84,34 @@ jobs:
       # 编译步骤
       - name: Build Android APKs
         if: matrix.platform == 'Android'
-        run: flutter build apk --release --split-per-abi
+        run: |
+          flutter build apk \
+            --release \
+            --split-per-abi \
+            --build-name "$BUILD_NAME" \
+            --build-number "$BUILD_NUMBER" \
+            --dart-define=APP_VERSION="$APP_VERSION" \
+            --dart-define=BUILD_TIMESTAMP="$BUILD_TIMESTAMP"
 
       - name: Build Windows executable
         if: matrix.platform == 'Windows'
-        run: flutter build windows --release
+        run: |
+          flutter build windows \
+            --release \
+            --build-name "$BUILD_NAME" \
+            --build-number "$BUILD_NUMBER" \
+            --dart-define=APP_VERSION="$APP_VERSION" \
+            --dart-define=BUILD_TIMESTAMP="$BUILD_TIMESTAMP"
 
       - name: Build Linux executable
         if: matrix.platform == 'Linux'
-        run: flutter build linux --release
+        run: |
+          flutter build linux \
+            --release \
+            --build-name "$BUILD_NAME" \
+            --build-number "$BUILD_NUMBER" \
+            --dart-define=APP_VERSION="$APP_VERSION" \
+            --dart-define=BUILD_TIMESTAMP="$BUILD_TIMESTAMP"
 
       - name: Build Linux AppImage
         if: matrix.platform == 'Linux'

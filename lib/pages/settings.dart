@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:pjsk_sticker/build_info.dart';
 import 'package:pjsk_sticker/l10n/app_localizations.dart';
 import 'package:pjsk_sticker/pages/font_settings.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -75,6 +77,16 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  String _formatBuildTime(BuildContext context) {
+    final DateTime? buildTime = BuildInfo.buildTime;
+    if (buildTime == null) {
+      return '-';
+    }
+
+    final String localeName = Localizations.localeOf(context).toString();
+    return DateFormat.yMd(localeName).add_Hms().format(buildTime.toLocal());
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -117,7 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("2.1.0"),
+                Text(BuildInfo.appVersion),
                 const SizedBox(width: 8),
                 const Icon(Icons.chevron_right, size: 18),
               ],
@@ -129,6 +141,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ]);
             },
+          ),
+          ListTile(
+            title: Text(s.buildTime),
+            trailing: Text(_formatBuildTime(context)),
           ),
           ListTile(
             title: Text(s.developer),
