@@ -151,7 +151,7 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         children: [
           ListTile(
-            leading: const Icon(Icons.font_download_outlined),
+            // leading: const Icon(Icons.font_download_outlined),
             title: Text(s.fontManagement),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
