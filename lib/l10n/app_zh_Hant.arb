@@ -82,6 +82,17 @@
   "systemDefault": "系統預設",
   "fontPreviewText": "わんだほーい",
 
+  "checkForUpdates": "檢查更新",
+  "checkingForUpdates": "正在檢查更新...",
+  "alreadyLatestVersion": "目前已是最新版本",
+  "updateCheckFailed": "檢查更新失敗，請稍後再試",
+  "newVersionFound": "發現新版本 {version}",
+  "releaseDate": "發布時間：{date}",
+  "releaseNotesEmpty": "暫無更新說明",
+  "ignoreThisVersion": "忽略此版本",
+  "updateLater": "稍後",
+  "updateNow": "前往更新",
+
   "version": "版本",
   "buildTime": "編譯時間",
   "developer": "開發",

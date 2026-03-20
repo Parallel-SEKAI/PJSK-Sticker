@@ -112,6 +112,27 @@
   "systemDefault": "系统默认",
   "fontPreviewText": "わんだほーい",
 
+  "checkForUpdates": "检查更新",
+  "checkingForUpdates": "正在检查更新...",
+  "alreadyLatestVersion": "当前已是最新版本",
+  "updateCheckFailed": "检查更新失败，请稍后重试",
+  "newVersionFound": "发现新版本 {version}",
+  "@newVersionFound": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "releaseDate": "发布时间：{date}",
+  "@releaseDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "releaseNotesEmpty": "暂无更新说明",
+  "ignoreThisVersion": "忽略此版本",
+  "updateLater": "稍后",
+  "updateNow": "前往更新",
+
   "version": "版本",
   "buildTime": "编译时间",
   "developer": "开发",

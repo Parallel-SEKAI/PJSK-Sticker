@@ -82,6 +82,17 @@
   "systemDefault": "システムデフォルト",
   "fontPreviewText": "わんだほーい",
 
+  "checkForUpdates": "アップデートを確認",
+  "checkingForUpdates": "アップデートを確認中...",
+  "alreadyLatestVersion": "すでに最新バージョンです",
+  "updateCheckFailed": "アップデートの確認に失敗しました。後でもう一度お試しください。",
+  "newVersionFound": "新しいバージョン {version} が見つかりました",
+  "releaseDate": "公開日: {date}",
+  "releaseNotesEmpty": "更新内容はありません",
+  "ignoreThisVersion": "このバージョンを無視",
+  "updateLater": "あとで",
+  "updateNow": "更新ページへ",
+
   "version": "バージョン",
   "buildTime": "ビルド時刻",
   "developer": "開発",

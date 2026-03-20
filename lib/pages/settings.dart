@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:pjsk_sticker/build_info.dart';
 import 'package:pjsk_sticker/l10n/app_localizations.dart';
 import 'package:pjsk_sticker/pages/font_settings.dart';
+import 'package:pjsk_sticker/update/update_checker.dart';
+import 'package:pjsk_sticker/update/update_prompt.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -19,6 +21,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   String? qq;
   List<String> qqurls = [];
+  final UpdateChecker _updateChecker = UpdateChecker();
+  bool _isCheckingUpdates = false;
 
   @override
   void initState() {
@@ -87,6 +91,58 @@ class _SettingsPageState extends State<SettingsPage> {
     return DateFormat.yMd(localeName).add_Hms().format(buildTime.toLocal());
   }
 
+  Future<void> _checkUpdatesManually() async {
+    if (_isCheckingUpdates) {
+      return;
+    }
+
+    final S s = S.of(context);
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+
+    setState(() {
+      _isCheckingUpdates = true;
+    });
+
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(s.checkingForUpdates),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+
+    try {
+      final updateInfo = await _updateChecker.checkForUpdate(manual: true);
+      if (!mounted) {
+        return;
+      }
+
+      messenger.hideCurrentSnackBar();
+      if (updateInfo == null) {
+        messenger.showSnackBar(SnackBar(content: Text(s.alreadyLatestVersion)));
+        return;
+      }
+
+      await showUpdateDialog(
+        context: context,
+        checker: _updateChecker,
+        updateInfo: updateInfo,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(content: Text(s.updateCheckFailed)));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCheckingUpdates = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -95,7 +151,7 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         children: [
           ListTile(
-            leading: const Icon(Icons.font_download_outlined),
+            // leading: const Icon(Icons.font_download_outlined),
             title: Text(s.fontManagement),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
@@ -141,6 +197,18 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ]);
             },
+          ),
+          ListTile(
+            title: Text(s.checkForUpdates),
+            trailing:
+                _isCheckingUpdates
+                    ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : const Icon(Icons.chevron_right, size: 18),
+            onTap: _isCheckingUpdates ? null : _checkUpdatesManually,
           ),
           ListTile(
             title: Text(s.buildTime),
