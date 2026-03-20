@@ -83,6 +83,7 @@
   "fontPreviewText": "わんだほーい",
 
   "version": "版本",
+  "buildTime": "編譯時間",
   "developer": "開發",
   "qqGroup": "QQ 群聊",
   "fetchingQQGroup": "正在取得QQ群號",
