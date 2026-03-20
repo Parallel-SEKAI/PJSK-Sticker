@@ -86,12 +86,30 @@ jobs:
         run: |
           set -euo pipefail
 
-          pubspec_version="$(awk '/^version:/ {print $2; exit}' pubspec.yaml)"
-          if [[ "$pubspec_version" =~ ^([0-9]+\.[0-9]+\.[0-9]+)(\+[0-9]+)?$ ]]; then
+          build_name=""
+          git fetch --force --tags >/dev/null 2>&1 || true
+          latest_tag="$(
+            git tag -l 'v*' \
+            | sed -E 's/^v//' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+([.-].+)?$' \
+            | sort -V \
+            | tail -n 1 || true
+          )"
+
+          if [[ -n "$latest_tag" && "$latest_tag" =~ ^([0-9]+\.[0-9]+\.[0-9]+)(-.+)?$ ]]; then
             build_name="${BASH_REMATCH[1]}"
-          else
-            echo "pubspec version '$pubspec_version' does not match X.Y.Z or X.Y.Z+N." >&2
-            exit 1
+            echo "Using latest git tag version: v$latest_tag"
+          fi
+
+          if [[ -z "$build_name" ]]; then
+            pubspec_version="$(awk '/^version:/ {print $2; exit}' pubspec.yaml)"
+            if [[ "$pubspec_version" =~ ^([0-9]+\.[0-9]+\.[0-9]+)(\+[0-9]+)?$ ]]; then
+              build_name="${BASH_REMATCH[1]}"
+              echo "No valid git tag found, fallback to pubspec version: $pubspec_version"
+            else
+              echo "pubspec version '$pubspec_version' does not match X.Y.Z or X.Y.Z+N." >&2
+              exit 1
+            fi
           fi
 
           build_number="${GITHUB_RUN_NUMBER}"
@@ -110,13 +128,30 @@ jobs:
             echo "BUILD_TIMESTAMP=$build_timestamp"
           } >> "$GITHUB_ENV"
 
+      - name: Detect Android signing secrets
+        id: android_signing
+        if: matrix.platform == 'Android'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${ANDROID_KEYSTORE_BASE64}" && -n "${ANDROID_STORE_PASSWORD}" && -n "${ANDROID_KEY_PASSWORD}" && -n "${ANDROID_KEY_ALIAS}" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Android signing secrets are missing. Building unsigned APKs."
+          fi
+
       - name: Decode Keystore
-        if: matrix.platform == 'Android' && secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_STORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' && secrets.ANDROID_KEY_ALIAS != ''
+        if: matrix.platform == 'Android' && steps.android_signing.outputs.available == 'true'
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release-keystore.jks
 
       - name: Create key.properties
-        if: matrix.platform == 'Android' && secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_STORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' && secrets.ANDROID_KEY_ALIAS != ''
+        if: matrix.platform == 'Android' && steps.android_signing.outputs.available == 'true'
         run: |
           echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
@@ -184,12 +219,26 @@ jobs:
           cd build/linux/x64/release/bundle
           tar -czvf ${{ github.workspace }}/linux-release.tar.gz .
 
-      - name: Upload Android APK artifacts
-        if: matrix.platform == 'Android'
+      - name: Upload Android APK (arm64-v8a)
+        if: matrix.platform == 'Android' && hashFiles('build/app/outputs/apk/release/*arm64-v8a*.apk') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: android-apks
-          path: build/app/outputs/apk/release/*.apk
+          name: android-apk-arm64-v8a
+          path: build/app/outputs/apk/release/*arm64-v8a*.apk
+
+      - name: Upload Android APK (armeabi-v7a)
+        if: matrix.platform == 'Android' && hashFiles('build/app/outputs/apk/release/*armeabi-v7a*.apk') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-armeabi-v7a
+          path: build/app/outputs/apk/release/*armeabi-v7a*.apk
+
+      - name: Upload Android APK (x86_64)
+        if: matrix.platform == 'Android' && hashFiles('build/app/outputs/apk/release/*x86_64*.apk') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-x86_64
+          path: build/app/outputs/apk/release/*x86_64*.apk
 
       - name: Upload Windows artifact
         if: matrix.platform == 'Windows'
