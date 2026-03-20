@@ -1,8 +1,5 @@
 name: Flutter CI Build
 
-permissions:
-  contents: read
-
 on:
   push:
     branches: [main]
@@ -37,32 +34,21 @@ jobs:
         run: flutter test
 
   build:
-    name: Build Flutter ${{ matrix.label }}
+    name: Build Flutter ${{ matrix.platform }}
     needs: quality
     strategy:
       fail-fast: false
       matrix:
+        platform: [Android, Linux, Windows]
         include:
           - platform: Android
-            label: Android Multi-ABI
             os: ubuntu-latest
           - platform: Linux
-            label: Linux x64
             os: ubuntu-latest
-            linux_arch: x64
-            linux_target_platform: linux-x64
-          - platform: Linux
-            label: Linux arm64
-            os: ubuntu-24.04-arm
-            linux_arch: arm64
-            linux_target_platform: linux-arm64
-            allow_failure: true
           - platform: Windows
-            label: Windows x64
             os: windows-latest
 
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.allow_failure == true }}
     defaults:
       run:
         shell: bash
@@ -183,41 +169,6 @@ jobs:
             --dart-define=APP_VERSION="$APP_VERSION" \
             --dart-define=BUILD_TIMESTAMP="$BUILD_TIMESTAMP"
 
-      - name: Stage Android split APKs
-        if: matrix.platform == 'Android'
-        run: |
-          set -euo pipefail
-          shopt -s globstar nullglob
-          mkdir -p "$RUNNER_TEMP/android-artifacts"
-          for apk in \
-            build/app/outputs/**/*arm64-v8a*.apk \
-            build/app/outputs/**/*armeabi-v7a*.apk \
-            build/app/outputs/**/*x86_64*.apk; do
-            cp "$apk" "$RUNNER_TEMP/android-artifacts/"
-          done
-
-      - name: Build Android universal APK
-        if: matrix.platform == 'Android'
-        run: |
-          flutter build apk \
-            --release \
-            --target-platform android-arm,android-arm64,android-x64 \
-            --build-name "$BUILD_NAME" \
-            --build-number "$BUILD_NUMBER" \
-            --dart-define=APP_VERSION="$APP_VERSION" \
-            --dart-define=BUILD_TIMESTAMP="$BUILD_TIMESTAMP"
-
-      - name: Stage Android universal APK
-        if: matrix.platform == 'Android'
-        run: |
-          set -euo pipefail
-          shopt -s globstar nullglob
-          mkdir -p "$RUNNER_TEMP/android-artifacts"
-          for apk in build/app/outputs/**/app-release.apk; do
-            cp "$apk" "$RUNNER_TEMP/android-artifacts/app-release-universal.apk"
-            break
-          done
-
       - name: Build Windows executable
         if: matrix.platform == 'Windows'
         run: |
@@ -233,26 +184,20 @@ jobs:
         run: |
           flutter build linux \
             --release \
-            --target-platform "${{ matrix.linux_target_platform }}" \
             --build-name "$BUILD_NAME" \
             --build-number "$BUILD_NUMBER" \
             --dart-define=APP_VERSION="$APP_VERSION" \
             --dart-define=BUILD_TIMESTAMP="$BUILD_TIMESTAMP"
 
       - name: Build Linux AppImage
-        if: matrix.platform == 'Linux' && matrix.linux_arch == 'x64'
+        if: matrix.platform == 'Linux'
         run: |
           sudo apt-get install -y libfuse2
           convert assets/icon.png -resize 256x256! pjsk_sticker.png
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
-          bundle_dir="$(find build/linux -type d -path '*/release/bundle' | head -n 1)"
-          if [[ -z "$bundle_dir" ]]; then
-            echo "Linux bundle directory not found." >&2
-            exit 1
-          fi
           mkdir -p AppDir/usr/bin
-          cp -r "$bundle_dir"/* AppDir/usr/bin/
+          cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
           echo "[Desktop Entry]
           Name=PJSK Sticker
           Exec=pjsk_sticker
@@ -271,66 +216,42 @@ jobs:
       - name: Archive Linux build artifact
         if: matrix.platform == 'Linux'
         run: |
-          bundle_dir="$(find build/linux -type d -path '*/release/bundle' | head -n 1)"
-          if [[ -z "$bundle_dir" ]]; then
-            echo "Linux bundle directory not found." >&2
-            exit 1
-          fi
-          cd "$bundle_dir"
-          tar -czvf ${{ github.workspace }}/linux-release-${{ matrix.linux_arch }}.tar.gz .
+          cd build/linux/x64/release/bundle
+          tar -czvf ${{ github.workspace }}/linux-release.tar.gz .
 
       - name: Upload Android APK (arm64-v8a)
-        if: matrix.platform == 'Android'
+        if: matrix.platform == 'Android' && hashFiles('build/app/outputs/apk/release/*arm64-v8a*.apk') != ''
         uses: actions/upload-artifact@v4
         with:
           name: android-apk-arm64-v8a
-          if-no-files-found: ignore
-          path: ${{ runner.temp }}/android-artifacts/*arm64-v8a*.apk
+          path: build/app/outputs/apk/release/*arm64-v8a*.apk
 
       - name: Upload Android APK (armeabi-v7a)
-        if: matrix.platform == 'Android'
+        if: matrix.platform == 'Android' && hashFiles('build/app/outputs/apk/release/*armeabi-v7a*.apk') != ''
         uses: actions/upload-artifact@v4
         with:
           name: android-apk-armeabi-v7a
-          if-no-files-found: ignore
-          path: ${{ runner.temp }}/android-artifacts/*armeabi-v7a*.apk
+          path: build/app/outputs/apk/release/*armeabi-v7a*.apk
 
       - name: Upload Android APK (x86_64)
-        if: matrix.platform == 'Android'
+        if: matrix.platform == 'Android' && hashFiles('build/app/outputs/apk/release/*x86_64*.apk') != ''
         uses: actions/upload-artifact@v4
         with:
           name: android-apk-x86_64
-          if-no-files-found: ignore
-          path: ${{ runner.temp }}/android-artifacts/*x86_64*.apk
-
-      - name: Upload Android APK (universal)
-        if: matrix.platform == 'Android'
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk-universal
-          if-no-files-found: ignore
-          path: ${{ runner.temp }}/android-artifacts/app-release-universal.apk
+          path: build/app/outputs/apk/release/*x86_64*.apk
 
       - name: Upload Windows artifact
         if: matrix.platform == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: windows-release-x64
+          name: windows-release
           path: windows-release.zip
 
-      - name: Upload Linux artifact (x64)
-        if: matrix.platform == 'Linux' && matrix.linux_arch == 'x64'
+      - name: Upload Linux artifact
+        if: matrix.platform == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: linux-release-x64
+          name: linux-release
           path: |
-            linux-release-x64.tar.gz
+            linux-release.tar.gz
             PJSK_Sticker-x86_64.AppImage
-
-      - name: Upload Linux artifact (arm64)
-        if: matrix.platform == 'Linux' && matrix.linux_arch == 'arm64'
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-release-arm64
-          path: |
-            linux-release-arm64.tar.gz
