@@ -1,13 +1,41 @@
-name: Flutter Build and Release
+name: Flutter CI Build
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
+  quality:
+    name: Analyze and Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: "3.38.1"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run analyzer
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
   build:
     name: Build Flutter ${{ matrix.platform }}
+    needs: quality
     strategy:
       fail-fast: false
       matrix:
@@ -29,13 +57,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Java
+        if: matrix.platform == 'Android'
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: gradle
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
           flutter-version: "3.38.1"
 
-      # 仅在编译 Linux 时安装必要的系统库
       - name: Install Linux dependencies
         if: matrix.platform == 'Linux'
         run: |
@@ -46,20 +81,26 @@ jobs:
         run: flutter pub get
 
       - name: Resolve build metadata
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          tag_name="${GITHUB_REF_NAME}"
-          tag_version="${tag_name#v}"
 
-          if [[ "$tag_version" =~ ^([0-9]+\.[0-9]+\.[0-9]+)(-.+)?$ ]]; then
+          pubspec_version="$(awk '/^version:/ {print $2; exit}' pubspec.yaml)"
+          if [[ "$pubspec_version" =~ ^([0-9]+\.[0-9]+\.[0-9]+)(\+[0-9]+)?$ ]]; then
             build_name="${BASH_REMATCH[1]}"
           else
-            echo "Tag '$tag_name' does not match vX.Y.Z or vX.Y.Z-suffix." >&2
+            echo "pubspec version '$pubspec_version' does not match X.Y.Z or X.Y.Z+N." >&2
             exit 1
           fi
 
           build_number="${GITHUB_RUN_NUMBER}"
-          app_version="${tag_version}+${build_number}"
+          app_version="${build_name}+${build_number}"
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" && -n "${PR_NUMBER:-}" ]]; then
+            app_version="${app_version}-pr.${PR_NUMBER}"
+          fi
+
           build_timestamp="$(date -u +%s)"
 
           {
@@ -69,21 +110,19 @@ jobs:
             echo "BUILD_TIMESTAMP=$build_timestamp"
           } >> "$GITHUB_ENV"
 
-      # Android 专属步骤：解码 Keystore
       - name: Decode Keystore
-        if: matrix.platform == 'Android'
+        if: matrix.platform == 'Android' && secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_STORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' && secrets.ANDROID_KEY_ALIAS != ''
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release-keystore.jks
 
       - name: Create key.properties
-        if: matrix.platform == 'Android'
+        if: matrix.platform == 'Android' && secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_STORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' && secrets.ANDROID_KEY_ALIAS != ''
         run: |
           echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=release-keystore.jks" >> android/key.properties
 
-      # 编译步骤
       - name: Build Android APKs
         if: matrix.platform == 'Android'
         run: |
@@ -133,7 +172,6 @@ jobs:
           ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run --appdir AppDir -i pjsk_sticker.png -d pjsk_sticker.desktop --output appimage
           rm linuxdeploy-x86_64.AppImage
 
-      # 打包压缩步骤
       - name: Archive Windows build artifact
         if: matrix.platform == 'Windows'
         run: |
@@ -146,7 +184,6 @@ jobs:
           cd build/linux/x64/release/bundle
           tar -czvf ${{ github.workspace }}/linux-release.tar.gz .
 
-      # 上传 Artifacts
       - name: Upload Android APK artifacts
         if: matrix.platform == 'Android'
         uses: actions/upload-artifact@v4
@@ -169,35 +206,3 @@ jobs:
           path: |
             linux-release.tar.gz
             PJSK_Sticker-x86_64.AppImage
-
-  release:
-    name: Create GitHub Release
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: build-artifacts
-          merge-multiple: true
-
-      - name: Determine if prerelease
-        id: pre
-        run: |
-          if [[ "${GITHUB_REF_NAME}" == *"-rc"* ]]; then
-            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          name: PJSK Sticker ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
-          prerelease: ${{ steps.pre.outputs.is_prerelease }}
-          files: build-artifacts/*
