@@ -82,6 +82,17 @@
   "systemDefault": "System Default",
   "fontPreviewText": "わんだほーい",
 
+  "checkForUpdates": "Check for Updates",
+  "checkingForUpdates": "Checking for updates...",
+  "alreadyLatestVersion": "You're already on the latest version",
+  "updateCheckFailed": "Failed to check updates. Please try again later.",
+  "newVersionFound": "New version {version} available",
+  "releaseDate": "Release Date: {date}",
+  "releaseNotesEmpty": "No release notes available",
+  "ignoreThisVersion": "Ignore This Version",
+  "updateLater": "Later",
+  "updateNow": "Update Now",
+
   "version": "Version",
   "buildTime": "Build Time",
   "developer": "Developer",
