@@ -24,8 +24,8 @@ _一个PJSK表情包生成器_
 [![QQ Group 1032106495](https://img.shields.io/badge/QQ%20Group%201032106495-加入群聊-blue)](https://qm.qq.com/q/kWarbQkuTm)
 
 - [Android/Windows 下载](https://github.com/Parallel-SEKAI/PJSK-Sticker/releases)
-- 最新 Android APK 可以从 [GitHub Actions](https://github.com/Parallel-SEKAI/PJSK-Sticker/actions/workflows/android.yml) 下载 (不稳定)
-- 最新 Windows 可执行文件可以从 [GitHub Actions](https://github.com/Parallel-SEKAI/PJSK-Sticker/actions/workflows/windows.yml) 下载 (不稳定)
+- 最新 Android APK 可以从 [GitHub Actions](https://github.com/Parallel-SEKAI/PJSK-Sticker/actions/workflows/push.yml) 下载 (不稳定)
+- 最新 Windows 可执行文件可以从 [GitHub Actions](https://github.com/Parallel-SEKAI/PJSK-Sticker/actions/workflows/push.yml) 下载 (不稳定)
 
 ## 致谢
 
