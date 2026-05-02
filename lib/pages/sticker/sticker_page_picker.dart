@@ -82,6 +82,8 @@ extension _StickerPagePicker on _StickerPageState {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
+          const Divider(height: 16),
+          _buildCustomBackgroundButton(ctx),
           const SizedBox(height: 16),
           _buildGroupTabs(group, setModalState, ctx),
           const Divider(height: 16),
@@ -137,6 +139,24 @@ extension _StickerPagePicker on _StickerPageState {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCustomBackgroundButton(BuildContext ctx) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: OutlinedButton.icon(
+        icon: const Icon(Icons.photo_library_outlined),
+        label: Text(S.of(ctx).customBackground),
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 44),
+        ),
+        onPressed: () async {
+          final nav = Navigator.of(ctx);
+          await _pickCustomBackground();
+          if (mounted) nav.pop();
+        },
       ),
     );
   }

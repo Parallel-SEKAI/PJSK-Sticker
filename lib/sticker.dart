@@ -1,3 +1,5 @@
+import "dart:ui" as ui;
+
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
@@ -1083,57 +1085,78 @@ class PjskGenerator {
   static Future<Uint8List> pjsk({
     required List<TextLayer> layers,
     String character = "",
+    Uint8List? customImageBytes,
   }) async {
-    // 1. 确定角色名称
-    String characterName = character.toLowerCase().replaceAll(
-      RegExp(r"[^a-z]"),
-      "",
-    );
+    // 确定背景图片
+    Uint8List bgImageBytes;
+    String characterName = "";
+    if (customImageBytes != null) {
+      // 验证自定义图片是否可解码
+      try {
+        final codec = await ui.instantiateImageCodec(customImageBytes);
+        final frame = await codec.getNextFrame();
+        frame.image.dispose();
+        codec.dispose();
+        bgImageBytes = customImageBytes;
+      } catch (e) {
+        if (kDebugMode) {
+          print("Invalid custom image, falling back to default: $e");
+        }
+        // 回退到 miku1
+        final bgImageData = await rootBundle.load(
+          "assets/characters/miku/miku1.png",
+        );
+        bgImageBytes = bgImageData.buffer.asUint8List();
+      }
+    } else {
+      // 1. 确定角色名称
+      characterName = character.toLowerCase().replaceAll(RegExp(r"[^a-z]"), "");
 
-    // 如果角色不在列表中，随机选一个或默认用 miku
-    if (!characterList.contains(characterName)) {
-      characterName = "miku";
-    }
-
-    // 2. 确定角色贴纸编号
-    int charNum =
-        int.tryParse(character.replaceAll(RegExp(r"[^0-9]"), "")) ?? 1;
-    final int maxNum = characterLen[characterName] ?? 1;
-    if (charNum < 1 || charNum > maxNum) {
-      charNum = 1;
-    }
-
-    // 3. 确定背景图片路径并从缓存加载
-    final String charPath =
-        "assets/characters/$characterName/$characterName$charNum.png";
-
-    if (!_imageCache.containsKey(charPath)) {
-      // 内存管理：缓存超过 30 张图片时移除最旧的一张 (FIFO)
-      if (_imageCache.length >= 30) {
-        _imageCache.remove(_imageCache.keys.first);
+      // 如果角色不在列表中，随机选一个或默认用 miku
+      if (!characterList.contains(characterName)) {
+        characterName = "miku";
       }
 
-      try {
-        final bgImageData = await rootBundle.load(charPath);
-        _imageCache[charPath] = bgImageData.buffer.asUint8List();
-      } catch (e) {
-        if (kDebugMode) print("Error loading image $charPath: $e");
-        // 如果特定编号失败，回退到 1.png
+      // 2. 确定角色贴纸编号
+      int charNum =
+          int.tryParse(character.replaceAll(RegExp(r"[^0-9]"), "")) ?? 1;
+      final int maxNum = characterLen[characterName] ?? 1;
+      if (charNum < 1 || charNum > maxNum) {
+        charNum = 1;
+      }
+
+      // 3. 确定背景图片路径并从缓存加载
+      final String charPath =
+          "assets/characters/$characterName/$characterName$charNum.png";
+
+      if (!_imageCache.containsKey(charPath)) {
+        // 内存管理：缓存超过 30 张图片时移除最旧的一张 (FIFO)
+        if (_imageCache.length >= 30) {
+          _imageCache.remove(_imageCache.keys.first);
+        }
+
         try {
-          final fallbackPath =
-              "assets/characters/$characterName/${characterName}1.png";
-          final bgImageData = await rootBundle.load(fallbackPath);
+          final bgImageData = await rootBundle.load(charPath);
           _imageCache[charPath] = bgImageData.buffer.asUint8List();
-        } catch (e2) {
-          // 极致回退
-          final bgImageData = await rootBundle.load(
-            "assets/characters/miku/miku1.png",
-          );
-          _imageCache[charPath] = bgImageData.buffer.asUint8List();
+        } catch (e) {
+          if (kDebugMode) print("Error loading image $charPath: $e");
+          // 如果特定编号失败，回退到 1.png
+          try {
+            final fallbackPath =
+                "assets/characters/$characterName/${characterName}1.png";
+            final bgImageData = await rootBundle.load(fallbackPath);
+            _imageCache[charPath] = bgImageData.buffer.asUint8List();
+          } catch (e2) {
+            // 极致回退
+            final bgImageData = await rootBundle.load(
+              "assets/characters/miku/miku1.png",
+            );
+            _imageCache[charPath] = bgImageData.buffer.asUint8List();
+          }
         }
       }
+      bgImageBytes = _imageCache[charPath]!;
     }
-    final Uint8List bgImageBytes = _imageCache[charPath]!;
 
     // 4. 预加载所有需要的字体（带缓存）
     final availableFonts = fonts;

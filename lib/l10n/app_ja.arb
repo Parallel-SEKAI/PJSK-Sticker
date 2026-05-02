@@ -103,5 +103,11 @@
   "afdian": "愛発電",
   "credits": "クレジット",
   "savedToPath": "{path} に保存しました",
-  "linkOpenFailed": "{link} を開けませんでした"
+  "linkOpenFailed": "{link} を開けませんでした",
+
+  "customBackground": "カスタム背景",
+  "customBackgroundHint": "ギャラリーから画像を選択",
+  "clearCustomBackground": "カスタム背景をクリア",
+  "invalidImageFormat": "対応していない画像形式です。PNG、JPEG、GIF、WebP のみ対応しています。",
+  "fileTooLarge": "ファイルが大きすぎます。5MB 以下の画像を選択してください。"
 }

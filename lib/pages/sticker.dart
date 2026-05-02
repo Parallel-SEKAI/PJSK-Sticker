@@ -5,7 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pasteboard/pasteboard.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pjsk_sticker/font_manager.dart';
 import 'package:pjsk_sticker/l10n/app_localizations.dart';
 import 'package:pjsk_sticker/pages/settings.dart';
@@ -55,6 +57,8 @@ class _StickerPageState extends State<StickerPage> {
   int _selectedSticker = 12;
   String _character = "emu";
   Uint8List? _byteData;
+  String? _customBgPath;
+  int _stickerGenerationId = 0;
 
   List<TextLayer> _layers = [TextLayer(content: "わんだほーい")];
   String? _currentLayerId;
@@ -139,27 +143,65 @@ class _StickerPageState extends State<StickerPage> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
                   ListTile(
-                    leading: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: themeColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: themeColor.withValues(alpha: 0.4),
-                            blurRadius: 4,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
+                    leading:
+                        _customBgPath != null
+                            ? ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: Image.file(
+                                File(_customBgPath!),
+                                key: ValueKey(_customBgPath),
+                                width: 24,
+                                height: 24,
+                                fit: BoxFit.cover,
+                                cacheWidth: 48,
+                                cacheHeight: 48,
+                                errorBuilder:
+                                    (ctx, err, st) =>
+                                        const SizedBox(width: 24, height: 24),
+                              ),
+                            )
+                            : Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: themeColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: themeColor.withValues(alpha: 0.4),
+                                    blurRadius: 4,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                            ),
+                    title: Text(
+                      _customBgPath != null
+                          ? S.of(context).customBackground
+                          : S.of(context).characterSelect,
                     ),
-                    title: Text(S.of(context).characterSelect),
                     subtitle: Text(
-                      _character == kRandom ? S.of(context).random : _character,
+                      _customBgPath != null
+                          ? S.of(context).customBackgroundHint
+                          : (_character == kRandom
+                              ? S.of(context).random
+                              : _character),
                     ),
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing:
+                        _customBgPath != null
+                            ? IconButton(
+                              icon: Icon(
+                                Icons.close,
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                              tooltip: S.of(context).clearCustomBackground,
+                              onPressed: _clearCustomBackground,
+                            )
+                            : const Icon(Icons.chevron_right),
                     onTap: _selectCharacter1,
                   ),
                   const Divider(),

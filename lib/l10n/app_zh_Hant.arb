@@ -103,5 +103,11 @@
   "afdian": "愛發電",
   "credits": "致謝",
   "savedToPath": "已儲存到 {path}",
-  "linkOpenFailed": "{link} 連結開啟失敗"
+  "linkOpenFailed": "{link} 連結開啟失敗",
+
+  "customBackground": "自訂背景",
+  "customBackgroundHint": "從相簿選擇圖片作為背景",
+  "clearCustomBackground": "清除自訂背景",
+  "invalidImageFormat": "不支援的圖片格式，僅支援 PNG、JPEG、GIF 和 WebP",
+  "fileTooLarge": "檔案過大，請選擇小於 5MB 的圖片"
 }
