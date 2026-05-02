@@ -153,5 +153,11 @@
     "placeholders": {
       "link": { "type": "String" }
     }
-  }
+  },
+
+  "customBackground": "自定义底图",
+  "customBackgroundHint": "从相册选择图片作为底图",
+  "clearCustomBackground": "清除自定义底图",
+  "invalidImageFormat": "不支持的图片格式,仅支持 PNG、JPEG、GIF 和 WebP",
+  "fileTooLarge": "文件过大，请选择小于 5MB 的图片"
 }

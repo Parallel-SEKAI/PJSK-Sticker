@@ -103,5 +103,11 @@
   "afdian": "Afdian",
   "credits": "Credits",
   "savedToPath": "Saved to {path}",
-  "linkOpenFailed": "Failed to open {link}"
+  "linkOpenFailed": "Failed to open {link}",
+
+  "customBackground": "Custom Background",
+  "customBackgroundHint": "Select an image from gallery as background",
+  "clearCustomBackground": "Clear Custom Background",
+  "invalidImageFormat": "Unsupported image format. Only PNG, JPEG, GIF, and WebP are supported.",
+  "fileTooLarge": "File too large. Please select an image smaller than 5MB."
 }

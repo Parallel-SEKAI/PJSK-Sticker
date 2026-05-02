@@ -1,7 +1,19 @@
 part of '../sticker.dart';
 
 extension _StickerPageLayers on _StickerPageState {
-  void _resetPreferences() {
+  Future<void> _resetPreferences() async {
+    // 删除自定义底图文件
+    if (_customBgPath != null) {
+      try {
+        final file = File(_customBgPath!);
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } catch (e) {
+        if (kDebugMode) print('Failed to delete custom background: $e');
+      }
+    }
+
     _update(() {
       _character = "emu";
       _selectedCharacter = "emu";
@@ -9,7 +21,11 @@ extension _StickerPageLayers on _StickerPageState {
       _layers = [TextLayer(content: "わんだほーい")];
       _currentLayerId = _layers.first.id;
       _contextController.text = _currentLayer.content;
+      _customBgPath = null;
     });
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('customBgPath');
     _createSticker();
   }
 

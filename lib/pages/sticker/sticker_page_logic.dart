@@ -3,6 +3,20 @@ part of '../sticker.dart';
 extension _StickerPageLogic on _StickerPageState {
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
+
+    // 加载自定义底图路径并验证文件存在性
+    String? customBgPath = prefs.getString('customBgPath');
+    if (customBgPath != null && customBgPath.isEmpty) {
+      customBgPath = null;
+    }
+    if (customBgPath != null) {
+      final file = File(customBgPath);
+      if (!await file.exists()) {
+        customBgPath = null;
+        await prefs.remove('customBgPath');
+      }
+    }
+
     _update(() {
       _selectedGroup = prefs.getString('selectedGroup');
       _selectedCharacter = prefs.getString('selectedCharacter') ?? "emu";
@@ -45,6 +59,7 @@ extension _StickerPageLogic on _StickerPageState {
       }
       _currentLayerId = _layers.first.id;
       _contextController.text = _currentLayer.content;
+      _customBgPath = customBgPath;
     });
     _createSticker();
   }
@@ -59,6 +74,11 @@ extension _StickerPageLogic on _StickerPageState {
       'layers',
       jsonEncode(_layers.map((l) => l.toJson()).toList()),
     );
+    if (_customBgPath != null && _customBgPath!.isNotEmpty) {
+      await prefs.setString('customBgPath', _customBgPath!);
+    } else {
+      await prefs.remove('customBgPath');
+    }
   }
 
   void _debouncedCreateSticker() {
@@ -69,6 +89,8 @@ extension _StickerPageLogic on _StickerPageState {
   }
 
   Future<void> _createSticker() async {
+    final currentId = ++_stickerGenerationId;
+
     await _savePreferences();
     String char = _character != _StickerPageState.kRandom ? _character : "";
     if (PjskGenerator.groups.contains(char)) {
@@ -78,9 +100,35 @@ extension _StickerPageLogic on _StickerPageState {
     char = PjskGenerator.characterMap[char] ?? char;
     if (_selectedSticker != -1) char = '$char$_selectedSticker';
 
-    _byteData = await PjskGenerator.pjsk(layers: _layers, character: char);
-    if (mounted) {
-      _update(() {});
+    // 按需加载自定义底图
+    Uint8List? customBytes;
+    if (_customBgPath != null) {
+      try {
+        final file = File(_customBgPath!);
+        if (await file.exists()) {
+          customBytes = await file.readAsBytes();
+        } else {
+          _customBgPath = null;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('customBgPath');
+        }
+      } catch (e) {
+        if (kDebugMode) print('Failed to load custom background: $e');
+        _customBgPath = null;
+      }
+    }
+
+    final result = await PjskGenerator.pjsk(
+      layers: _layers,
+      character: char,
+      customImageBytes: customBytes,
+    );
+
+    // 只有最新的请求才更新 UI
+    if (currentId == _stickerGenerationId && mounted) {
+      _update(() {
+        _byteData = result;
+      });
     }
   }
 
@@ -142,6 +190,10 @@ extension _StickerPageLogic on _StickerPageState {
   }
 
   Color _getThemeColor() {
+    // 使用自定义底图时，采用系统动态取色（Material You）
+    if (_customBgPath != null) {
+      return Theme.of(context).colorScheme.primary;
+    }
     final charKey = PjskGenerator.characterMap[_character];
     if (charKey != null && PjskGenerator.characterColor.containsKey(charKey)) {
       return PjskGenerator.characterColor[charKey]!;
@@ -150,5 +202,104 @@ extension _StickerPageLogic on _StickerPageState {
       return PjskGenerator.groupColor[_character]!;
     }
     return Theme.of(context).colorScheme.primary;
+  }
+
+  Future<void> _pickCustomBackground() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+    );
+    if (picked == null) return;
+
+    final bytes = await picked.readAsBytes();
+
+    // 添加文件大小检查（限制 5MB）
+    if (bytes.length > 5 * 1024 * 1024) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(S.of(context).fileTooLarge)));
+      }
+      return;
+    }
+
+    // 验证文件头 magic bytes，仅允许 PNG/JPEG/GIF/WebP
+    if (!_isValidImageBytes(bytes)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(S.of(context).invalidImageFormat)),
+        );
+      }
+      return;
+    }
+
+    // 复制到应用私有目录
+    final appDir = await getApplicationDocumentsDirectory();
+    final customBgFile = File('${appDir.path}/custom_background.png');
+    await customBgFile.writeAsBytes(bytes);
+
+    _update(() {
+      _customBgPath = customBgFile.path;
+    });
+    _createSticker();
+  }
+
+  /// 通过 magic bytes 验证是否为支持的图片格式（PNG/JPEG/GIF/WebP）
+  static bool _isValidImageBytes(Uint8List bytes) {
+    if (bytes.length < 12) return false;
+
+    // PNG: 89 50 4E 47 0D 0A 1A 0A
+    if (bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return true;
+    }
+
+    // JPEG: FF D8 FF
+    if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) {
+      return true;
+    }
+
+    // GIF: 47 49 46 38 (GIF87a / GIF89a)
+    if (bytes[0] == 0x47 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x38) {
+      return true;
+    }
+
+    // WebP: RIFF....WEBP
+    if (bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<void> _clearCustomBackground() async {
+    if (_customBgPath != null) {
+      try {
+        final file = File(_customBgPath!);
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } catch (e) {
+        if (kDebugMode) print('Failed to delete custom background: $e');
+      }
+    }
+    _update(() {
+      _customBgPath = null;
+    });
+    _createSticker();
   }
 }
