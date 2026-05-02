@@ -39,11 +39,94 @@ extension _StickerPageLayers on _StickerPageState {
     _createSticker();
   }
 
+  void _toggleLayerVisibility(String id) {
+    _update(() {
+      final index = _layers.indexWhere((l) => l.id == id);
+      if (index == -1) {
+        if (kDebugMode) print('Layer with id $id not found');
+        return;
+      }
+      _layers[index].visible = !_layers[index].visible;
+    });
+    _createSticker();
+  }
+
+  void _toggleLayerLock(String id) {
+    _update(() {
+      final index = _layers.indexWhere((l) => l.id == id);
+      if (index == -1) {
+        if (kDebugMode) print('Layer with id $id not found');
+        return;
+      }
+      _layers[index].locked = !_layers[index].locked;
+    });
+  }
+
+  void _duplicateLayer(int index) {
+    if (index < 0 || index >= _layers.length) {
+      if (kDebugMode) print('Invalid layer index: $index');
+      return;
+    }
+
+    _update(() {
+      final originalLayer = _layers[index];
+      // 由于 copyWith 会保留原 id，需要创建一个新的 TextLayer
+      final duplicatedLayer = TextLayer(
+        content: "${originalLayer.content}${S.of(context).copyLayerSuffix}",
+        pos: originalLayer.pos,
+        lean: originalLayer.lean,
+        fontSize: originalLayer.fontSize,
+        edgeSize: originalLayer.edgeSize,
+        font: originalLayer.font,
+        useCustomColor: originalLayer.useCustomColor,
+        customColor: originalLayer.customColor,
+        opacity: originalLayer.opacity,
+        visible: originalLayer.visible,
+        locked: originalLayer.locked,
+      );
+      _layers.insert(index + 1, duplicatedLayer);
+      _currentLayerId = duplicatedLayer.id;
+      _contextController.text = _currentLayer.content;
+    });
+    _createSticker();
+  }
+
+  void _reorderLayer(int oldIndex, int newIndex) {
+    if (oldIndex < 0 || oldIndex >= _layers.length) {
+      if (kDebugMode) print('Invalid old layer index: $oldIndex');
+      return;
+    }
+    if (newIndex < 0 || newIndex > _layers.length) {
+      if (kDebugMode) print('Invalid new layer index: $newIndex');
+      return;
+    }
+
+    final adjustedNewIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
+    if (oldIndex == adjustedNewIndex) {
+      return;
+    }
+
+    _update(() {
+      final layer = _layers.removeAt(oldIndex);
+      _layers.insert(adjustedNewIndex, layer);
+      _contextController.text = _currentLayer.content;
+    });
+    _createSticker();
+  }
+
   void _removeLayer(int index) {
     if (_layers.length <= 1) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(S.of(context).atLeastOneLayer)));
+      return;
+    }
+
+    // 添加锁定检查
+    if (_layers[index].locked) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(S.of(context).layerLocked)));
       return;
     }
 

@@ -17,6 +17,8 @@ class TextLayer {
   bool useCustomColor;
   Color customColor;
   double opacity;
+  bool visible;
+  bool locked;
 
   TextLayer({
     String? id,
@@ -29,6 +31,8 @@ class TextLayer {
     this.useCustomColor = false,
     this.customColor = const Color(0xFFDDAACC),
     this.opacity = 1.0,
+    this.visible = true,
+    this.locked = false,
   }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
 
   Map<String, dynamic> toJson() => {
@@ -43,6 +47,8 @@ class TextLayer {
     'u': useCustomColor,
     'clr': customColor.toARGB32(),
     'o': opacity,
+    'v': visible,
+    'l': locked,
   };
 
   factory TextLayer.fromJson(Map<String, dynamic> json) => TextLayer(
@@ -59,6 +65,8 @@ class TextLayer {
     useCustomColor: json['u'] ?? json['useCustomColor'] ?? false,
     customColor: Color(json['clr'] ?? json['customColor'] ?? 0xFFDDAACC),
     opacity: (json['o'] ?? json['to'] ?? 1.0).toDouble(),
+    visible: json['v'] ?? json['visible'] ?? true,
+    locked: json['l'] ?? json['locked'] ?? false,
   );
 
   TextLayer copyWith({
@@ -71,6 +79,8 @@ class TextLayer {
     bool? useCustomColor,
     Color? customColor,
     double? opacity,
+    bool? visible,
+    bool? locked,
   }) => TextLayer(
     id: id,
     content: content ?? this.content,
@@ -82,6 +92,8 @@ class TextLayer {
     useCustomColor: useCustomColor ?? this.useCustomColor,
     customColor: customColor ?? this.customColor,
     opacity: opacity ?? this.opacity,
+    visible: visible ?? this.visible,
+    locked: locked ?? this.locked,
   );
 }
 
@@ -1183,9 +1195,9 @@ class PjskGenerator {
       }
     }
 
-    // 5. 准备渲染层
+    // 5. 准备渲染层（过滤不可见的图层）
     List<TextOverlayLayer> renderLayers =
-        layers.map((l) {
+        layers.where((l) => l.visible).map((l) {
           String fontName = '';
           Uint8List fontBytes = Uint8List(0);
           if (availableFonts.isNotEmpty) {

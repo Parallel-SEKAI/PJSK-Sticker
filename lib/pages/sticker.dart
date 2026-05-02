@@ -210,18 +210,22 @@ class _StickerPageState extends State<StickerPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: TextField(
                       controller: _contextController,
+                      enabled: !currentLayer.locked,
                       decoration: InputDecoration(
                         labelText: S.of(context).editText,
                         prefixIcon: const Icon(Icons.text_fields),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _contextController.clear();
-                            setState(() {
-                              currentLayer.content = "";
-                            });
-                            _debouncedCreateSticker();
-                          },
+                          onPressed:
+                              currentLayer.locked
+                                  ? null
+                                  : () {
+                                    _contextController.clear();
+                                    setState(() {
+                                      currentLayer.content = "";
+                                    });
+                                    _debouncedCreateSticker();
+                                  },
                         ),
                         border: const OutlineInputBorder(),
                       ),

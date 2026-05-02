@@ -43,6 +43,14 @@
     }
   },
   "confirmDelete": "确认删除",
+  "layerVisible": "显示图层",
+  "layerHidden": "隐藏图层",
+  "layerLocked": "锁定图层",
+  "layerUnlocked": "解锁图层",
+  "duplicateLayer": "复制图层",
+  "layerInfo": "图层信息",
+  "copyLayerSuffix": " - 副本",
+  "reorderLayerHandle": "拖动以重新排序图层",
 
   "textStyle": "文字样式",
   "font": "字体",

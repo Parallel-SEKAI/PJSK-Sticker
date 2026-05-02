@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:pjsk_sticker/font_manager.dart';
@@ -7,7 +9,9 @@ import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  requestStoragePermission();
+  if (Platform.isAndroid) {
+    await requestStoragePermission();
+  }
   await FontManager.instance.init();
   runApp(const MyApp());
 }
