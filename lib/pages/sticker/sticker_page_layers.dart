@@ -136,6 +136,7 @@ extension _StickerPageLayers on _StickerPageState {
                 enableAlpha: false,
                 onColorChanged: (c) => selected = c,
                 pickerAreaHeightPercent: 0.8,
+                hexInputBar: true,
               ),
             ),
             actions: [
