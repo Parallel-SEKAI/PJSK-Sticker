@@ -1099,8 +1099,9 @@ class PjskGenerator {
         codec.dispose();
         bgImageBytes = customImageBytes;
       } catch (e) {
-        if (kDebugMode)
+        if (kDebugMode) {
           print("Invalid custom image, falling back to default: $e");
+        }
         // 回退到 miku1
         final bgImageData = await rootBundle.load(
           "assets/characters/miku/miku1.png",
