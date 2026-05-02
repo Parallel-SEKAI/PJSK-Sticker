@@ -16,6 +16,7 @@ class TextLayer {
   int font;
   bool useCustomColor;
   Color customColor;
+  double opacity;
 
   TextLayer({
     String? id,
@@ -27,6 +28,7 @@ class TextLayer {
     this.font = 1,
     this.useCustomColor = false,
     this.customColor = const Color(0xFFDDAACC),
+    this.opacity = 1.0,
   }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
 
   Map<String, dynamic> toJson() => {
@@ -40,6 +42,7 @@ class TextLayer {
     'f': font,
     'u': useCustomColor,
     'clr': customColor.toARGB32(),
+    'o': opacity,
   };
 
   factory TextLayer.fromJson(Map<String, dynamic> json) => TextLayer(
@@ -55,6 +58,7 @@ class TextLayer {
     font: json['f'] ?? json['font'] ?? 1,
     useCustomColor: json['u'] ?? json['useCustomColor'] ?? false,
     customColor: Color(json['clr'] ?? json['customColor'] ?? 0xFFDDAACC),
+    opacity: (json['o'] ?? json['to'] ?? 1.0).toDouble(),
   );
 
   TextLayer copyWith({
@@ -66,6 +70,7 @@ class TextLayer {
     int? font,
     bool? useCustomColor,
     Color? customColor,
+    double? opacity,
   }) => TextLayer(
     id: id,
     content: content ?? this.content,
@@ -76,6 +81,7 @@ class TextLayer {
     font: font ?? this.font,
     useCustomColor: useCustomColor ?? this.useCustomColor,
     customColor: customColor ?? this.customColor,
+    opacity: opacity ?? this.opacity,
   );
 }
 
@@ -1202,6 +1208,7 @@ class PjskGenerator {
                 l.useCustomColor
                     ? l.customColor
                     : (characterColor[characterName] ?? Colors.pink),
+            opacity: l.opacity,
           );
         }).toList();
 

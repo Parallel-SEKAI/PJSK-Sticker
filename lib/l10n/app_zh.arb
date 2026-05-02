@@ -53,6 +53,7 @@
   "yOffset": "Y 轴偏移",
   "advancedStyle": "高级样式",
   "strokeWidth": "描边粗细",
+  "opacity": "透明度",
   "customColor": "自定义颜色",
   "customColorHint": "启用后将覆盖角色默认色",
   "textColor": "文字颜色",

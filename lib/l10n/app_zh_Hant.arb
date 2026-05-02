@@ -43,6 +43,7 @@
   "yOffset": "Y 軸偏移",
   "advancedStyle": "進階樣式",
   "strokeWidth": "描邊粗細",
+  "opacity": "透明度",
   "customColor": "自訂顏色",
   "customColorHint": "啟用後將覆蓋角色預設色",
   "textColor": "文字顏色",

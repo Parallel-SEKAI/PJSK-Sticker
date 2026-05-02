@@ -43,6 +43,7 @@
   "yOffset": "Y Offset",
   "advancedStyle": "Advanced",
   "strokeWidth": "Stroke Width",
+  "opacity": "Opacity",
   "customColor": "Custom Color",
   "customColorHint": "Overrides the default character color",
   "textColor": "Text Color",

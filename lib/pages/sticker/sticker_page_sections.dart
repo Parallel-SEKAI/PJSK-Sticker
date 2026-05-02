@@ -35,6 +35,7 @@ extension _StickerPageSections on _StickerPageState {
     required double max,
     int divisions = 100,
     required ValueChanged<double> onChanged,
+    bool showAsPercentage = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,7 +47,9 @@ extension _StickerPageSections on _StickerPageState {
             children: [
               Text(label),
               Text(
-                value.round().toString(),
+                showAsPercentage
+                    ? '${value.round()}%'
+                    : value.round().toString(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
@@ -218,6 +221,18 @@ extension _StickerPageSections on _StickerPageState {
           divisions: 20,
           onChanged: (v) {
             _update(() => layer.edgeSize = v.round());
+            _debouncedCreateSticker();
+          },
+        ),
+        _buildSliderTile(
+          label: S.of(context).opacity,
+          value: layer.opacity * 100,
+          min: 0,
+          max: 100,
+          divisions: 100,
+          showAsPercentage: true,
+          onChanged: (v) {
+            _update(() => layer.opacity = v / 100);
             _debouncedCreateSticker();
           },
         ),

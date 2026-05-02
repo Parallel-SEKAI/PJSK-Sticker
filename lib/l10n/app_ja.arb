@@ -43,6 +43,7 @@
   "yOffset": "Y オフセット",
   "advancedStyle": "詳細スタイル",
   "strokeWidth": "縁取りの太さ",
+  "opacity": "不透明度",
   "customColor": "カスタムカラー",
   "customColorHint": "有効にするとキャラクターのデフォルト色を上書きします",
   "textColor": "テキスト色",
