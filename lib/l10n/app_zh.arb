@@ -43,6 +43,14 @@
     }
   },
   "confirmDelete": "确认删除",
+  "layerVisible": "显示图层",
+  "layerHidden": "隐藏图层",
+  "layerLocked": "锁定图层",
+  "layerUnlocked": "解锁图层",
+  "duplicateLayer": "复制图层",
+  "layerInfo": "图层信息",
+  "copyLayerSuffix": " - 副本",
+  "reorderLayerHandle": "拖动以重新排序图层",
 
   "textStyle": "文字样式",
   "font": "字体",
@@ -53,6 +61,7 @@
   "yOffset": "Y 轴偏移",
   "advancedStyle": "高级样式",
   "strokeWidth": "描边粗细",
+  "opacity": "透明度",
   "customColor": "自定义颜色",
   "customColorHint": "启用后将覆盖角色默认色",
   "textColor": "文字颜色",

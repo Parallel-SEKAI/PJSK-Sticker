@@ -13,6 +13,7 @@ class TextOverlayLayer {
   final double fontSize;
   final int edgeSize;
   final Color color;
+  final double opacity;
 
   TextOverlayLayer({
     required this.content,
@@ -23,6 +24,7 @@ class TextOverlayLayer {
     required this.fontSize,
     required this.edgeSize,
     required this.color,
+    this.opacity = 1.0,
   });
 }
 
@@ -164,6 +166,13 @@ class ImageTextOverlay {
 
       canvas.save();
 
+      // 创建带透明度的 Paint
+      final paint =
+          Paint()..color = Color.fromRGBO(255, 255, 255, layer.opacity);
+
+      // 使用 saveLayer 应用透明度到整个文字图层
+      canvas.saveLayer(null, paint);
+
       // 1. 先位移到目标位置（基于原始坐标系，不受旋转影响）
       canvas.translate(layer.pos.dx, layer.pos.dy);
 
@@ -178,7 +187,8 @@ class ImageTextOverlay {
       // 3. 绘制文字
       textPainter.paint(canvas, Offset.zero);
 
-      canvas.restore();
+      canvas.restore(); // 恢复 saveLayer
+      canvas.restore(); // 恢复 save
     }
 
     final picture = recorder.endRecording();
