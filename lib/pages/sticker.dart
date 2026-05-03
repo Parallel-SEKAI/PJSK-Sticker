@@ -140,108 +140,15 @@ class _StickerPageState extends State<StickerPage> {
             Expanded(
               flex: 3,
               child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.all(12),
                 children: [
-                  ListTile(
-                    leading:
-                        _customBgPath != null
-                            ? ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: Image.file(
-                                File(_customBgPath!),
-                                key: ValueKey(_customBgPath),
-                                width: 24,
-                                height: 24,
-                                fit: BoxFit.cover,
-                                cacheWidth: 48,
-                                cacheHeight: 48,
-                                errorBuilder:
-                                    (ctx, err, st) =>
-                                        const SizedBox(width: 24, height: 24),
-                              ),
-                            )
-                            : Container(
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                color: themeColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: themeColor.withValues(alpha: 0.4),
-                                    blurRadius: 4,
-                                    spreadRadius: 1,
-                                  ),
-                                ],
-                              ),
-                            ),
-                    title: Text(
-                      _customBgPath != null
-                          ? S.of(context).customBackground
-                          : S.of(context).characterSelect,
-                    ),
-                    subtitle: Text(
-                      _customBgPath != null
-                          ? S.of(context).customBackgroundHint
-                          : (_character == kRandom
-                              ? S.of(context).random
-                              : _character),
-                    ),
-                    trailing:
-                        _customBgPath != null
-                            ? IconButton(
-                              icon: Icon(
-                                Icons.close,
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                              tooltip: S.of(context).clearCustomBackground,
-                              onPressed: _clearCustomBackground,
-                            )
-                            : const Icon(Icons.chevron_right),
-                    onTap: _selectCharacter1,
-                  ),
-                  const Divider(),
-                  _buildLayerBar(customTheme.colorScheme),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: TextField(
-                      controller: _contextController,
-                      enabled: !currentLayer.locked,
-                      decoration: InputDecoration(
-                        labelText: S.of(context).editText,
-                        prefixIcon: const Icon(Icons.text_fields),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed:
-                              currentLayer.locked
-                                  ? null
-                                  : () {
-                                    _contextController.clear();
-                                    setState(() {
-                                      currentLayer.content = "";
-                                    });
-                                    _debouncedCreateSticker();
-                                  },
-                        ),
-                        border: const OutlineInputBorder(),
-                      ),
-                      maxLines: null,
-                      onChanged: (v) {
-                        setState(() {
-                          currentLayer.content = v;
-                        });
-                        _debouncedCreateSticker();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildStyleExpansionTile(currentLayer),
-                  _buildPositionExpansionTile(currentLayer),
-                  _buildAdvancedExpansionTile(currentLayer),
+                  _buildResourceCard(customTheme.colorScheme, themeColor),
+                  const SizedBox(height: 12),
+                  _buildTextInputCard(customTheme.colorScheme, currentLayer),
+                  const SizedBox(height: 12),
+                  _buildCommonAdjustCard(customTheme.colorScheme, currentLayer),
+                  const SizedBox(height: 12),
+                  _buildAdvancedCard(customTheme.colorScheme, currentLayer),
                   const SizedBox(height: 64),
                 ],
               ),
