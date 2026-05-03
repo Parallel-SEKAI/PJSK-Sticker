@@ -56,6 +56,9 @@
   "customColorHint": "有効にするとキャラクターのデフォルト色を上書きします",
   "textColor": "テキスト色",
   "pickColor": "色を選択",
+  "bendEffect": "曲げ効果",
+  "bendCurvature": "曲率",
+  "bendSpacing": "文字間隔",
 
   "exportImage": "画像を書き出す",
   "savedToGallery": "ギャラリーに保存しました",
