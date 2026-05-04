@@ -66,6 +66,9 @@
   "customColorHint": "启用后将覆盖角色默认色",
   "textColor": "文字颜色",
   "pickColor": "选择颜色",
+  "bendEffect": "弯曲效果",
+  "bendCurvature": "曲率",
+  "bendSpacing": "字符间距",
 
   "exportImage": "导出图片",
   "savedToGallery": "已保存到相册",

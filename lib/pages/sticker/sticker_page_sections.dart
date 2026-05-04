@@ -412,7 +412,55 @@ extension _StickerPageSections on _StickerPageState {
               },
             ),
             const Divider(height: 24),
-            // 分组二：颜色/描边
+            // 分组二：弯曲效果
+            Row(
+              children: [
+                Icon(Icons.architecture, size: 16, color: colorScheme.primary),
+                const SizedBox(width: 6),
+                Text(
+                  S.of(context).bendEffect,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // 弯曲曲率
+            _buildCompactSlider(
+              label: S.of(context).bendCurvature,
+              value: layer.bendCurvature,
+              min: -0.05,
+              max: 0.05,
+              divisions: 1000,
+              valueFormatter: (v) {
+                // 显示 4 位小数，接近 0 时显示 0
+                if (v.abs() < 0.00001) return '0';
+                return v.toStringAsFixed(4);
+              },
+              enabled: !layer.locked,
+              onChanged: (v) {
+                _update(() => layer.bendCurvature = v);
+                _debouncedCreateSticker();
+              },
+            ),
+            const SizedBox(height: 4),
+            // 字符间距
+            _buildCompactSlider(
+              label: S.of(context).bendSpacing,
+              value: layer.bendSpacing,
+              min: -10,
+              max: 50,
+              divisions: 600,
+              enabled: !layer.locked,
+              onChanged: (v) {
+                _update(() => layer.bendSpacing = v);
+                _debouncedCreateSticker();
+              },
+            ),
+            const Divider(height: 24),
+            // 分组三：颜色/描边
             Row(
               children: [
                 Icon(Icons.format_paint, size: 16, color: colorScheme.primary),
@@ -592,7 +640,7 @@ extension _StickerPageSections on _StickerPageState {
     );
   }
 
-  // 紧凑 slider helper（用于高级样式卡片）
+  // 紧凑 slider helper(用于高级样式卡片)
   Widget _buildCompactSlider({
     required String label,
     required double value,
@@ -600,9 +648,13 @@ extension _StickerPageSections on _StickerPageState {
     required double max,
     int? divisions,
     String suffix = '',
+    String Function(double value)? valueFormatter,
     required ValueChanged<double> onChanged,
     bool enabled = true,
   }) {
+    // 默认格式化器：整数 + 后缀
+    final formatter = valueFormatter ?? (v) => '${v.round()}$suffix';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -613,7 +665,7 @@ extension _StickerPageSections on _StickerPageState {
             children: [
               Text(label, style: Theme.of(context).textTheme.bodySmall),
               Text(
-                '${value.round()}$suffix',
+                formatter(value),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: Theme.of(context).colorScheme.primary,

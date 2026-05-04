@@ -56,6 +56,9 @@
   "customColorHint": "啟用後將覆蓋角色預設色",
   "textColor": "文字顏色",
   "pickColor": "選擇顏色",
+  "bendEffect": "彎曲效果",
+  "bendCurvature": "曲率",
+  "bendSpacing": "字元間距",
 
   "exportImage": "匯出圖片",
   "savedToGallery": "已儲存到相簿",

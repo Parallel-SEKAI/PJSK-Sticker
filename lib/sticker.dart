@@ -19,6 +19,8 @@ class TextLayer {
   double opacity;
   bool visible;
   bool locked;
+  double bendCurvature;
+  double bendSpacing;
 
   TextLayer({
     String? id,
@@ -33,6 +35,8 @@ class TextLayer {
     this.opacity = 1.0,
     this.visible = true,
     this.locked = false,
+    this.bendCurvature = 0.0,
+    this.bendSpacing = 0.0,
   }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
 
   Map<String, dynamic> toJson() => {
@@ -49,25 +53,43 @@ class TextLayer {
     'o': opacity,
     'v': visible,
     'l': locked,
+    'bc': bendCurvature,
+    'bs': bendSpacing,
   };
 
-  factory TextLayer.fromJson(Map<String, dynamic> json) => TextLayer(
-    id: json['i'] ?? json['id'],
-    content: json['c'] ?? json['content'] ?? "",
-    pos: Offset(
-      (json['x'] ?? json['pos_x'] ?? 20).toDouble(),
-      (json['y'] ?? json['pos_y'] ?? 10).toDouble(),
-    ),
-    lean: (json['r'] ?? json['lean'] ?? 15).toDouble(),
-    fontSize: (json['s'] ?? json['fontSize'] ?? 50).toDouble(),
-    edgeSize: json['e'] ?? json['edgeSize'] ?? 4,
-    font: json['f'] ?? json['font'] ?? 1,
-    useCustomColor: json['u'] ?? json['useCustomColor'] ?? false,
-    customColor: Color(json['clr'] ?? json['customColor'] ?? 0xFFDDAACC),
-    opacity: (json['o'] ?? json['to'] ?? 1.0).toDouble(),
-    visible: json['v'] ?? json['visible'] ?? true,
-    locked: json['l'] ?? json['locked'] ?? false,
-  );
+  factory TextLayer.fromJson(Map<String, dynamic> json) {
+    // 读取曲率：优先读取新字段 bc/bendCurvature
+    double curvature;
+    if (json.containsKey('bc') || json.containsKey('bendCurvature')) {
+      curvature = (json['bc'] ?? json['bendCurvature'] ?? 0.0).toDouble();
+    } else if (json.containsKey('br') || json.containsKey('bendRadius')) {
+      // 兼容旧半径字段：radius == 0 => 0，否则 1.0 / radius
+      final radius = (json['br'] ?? json['bendRadius'] ?? 0.0).toDouble();
+      curvature = (radius == 0.0) ? 0.0 : (1.0 / radius);
+    } else {
+      curvature = 0.0;
+    }
+
+    return TextLayer(
+      id: json['i'] ?? json['id'],
+      content: json['c'] ?? json['content'] ?? "",
+      pos: Offset(
+        (json['x'] ?? json['pos_x'] ?? 20).toDouble(),
+        (json['y'] ?? json['pos_y'] ?? 10).toDouble(),
+      ),
+      lean: (json['r'] ?? json['lean'] ?? 15).toDouble(),
+      fontSize: (json['s'] ?? json['fontSize'] ?? 50).toDouble(),
+      edgeSize: json['e'] ?? json['edgeSize'] ?? 4,
+      font: json['f'] ?? json['font'] ?? 1,
+      useCustomColor: json['u'] ?? json['useCustomColor'] ?? false,
+      customColor: Color(json['clr'] ?? json['customColor'] ?? 0xFFDDAACC),
+      opacity: (json['o'] ?? json['to'] ?? 1.0).toDouble(),
+      visible: json['v'] ?? json['visible'] ?? true,
+      locked: json['l'] ?? json['locked'] ?? false,
+      bendCurvature: curvature,
+      bendSpacing: (json['bs'] ?? json['bendSpacing'] ?? 0.0).toDouble(),
+    );
+  }
 
   TextLayer copyWith({
     String? content,
@@ -81,6 +103,8 @@ class TextLayer {
     double? opacity,
     bool? visible,
     bool? locked,
+    double? bendCurvature,
+    double? bendSpacing,
   }) => TextLayer(
     id: id,
     content: content ?? this.content,
@@ -94,6 +118,8 @@ class TextLayer {
     opacity: opacity ?? this.opacity,
     visible: visible ?? this.visible,
     locked: locked ?? this.locked,
+    bendCurvature: bendCurvature ?? this.bendCurvature,
+    bendSpacing: bendSpacing ?? this.bendSpacing,
   );
 }
 
@@ -1221,6 +1247,8 @@ class PjskGenerator {
                     ? l.customColor
                     : (characterColor[characterName] ?? Colors.pink),
             opacity: l.opacity,
+            bendCurvature: l.bendCurvature,
+            bendSpacing: l.bendSpacing,
           );
         }).toList();
 

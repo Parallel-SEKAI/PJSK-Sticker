@@ -83,6 +83,8 @@ extension _StickerPageLayers on _StickerPageState {
         opacity: originalLayer.opacity,
         visible: originalLayer.visible,
         locked: originalLayer.locked,
+        bendCurvature: originalLayer.bendCurvature,
+        bendSpacing: originalLayer.bendSpacing,
       );
       _layers.insert(index + 1, duplicatedLayer);
       _currentLayerId = duplicatedLayer.id;

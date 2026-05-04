@@ -56,6 +56,9 @@
   "customColorHint": "Overrides the default character color",
   "textColor": "Text Color",
   "pickColor": "Pick Color",
+  "bendEffect": "Bend Effect",
+  "bendCurvature": "Curvature",
+  "bendSpacing": "Character Spacing",
 
   "exportImage": "Export",
   "savedToGallery": "Saved to gallery",
