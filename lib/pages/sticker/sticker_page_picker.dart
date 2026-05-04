@@ -346,4 +346,14 @@ extension _StickerPagePicker on _StickerPageState {
       },
     );
   }
+
+  /// 根据角色名查找所属组
+  String? _findGroupForCharacter(String character) {
+    for (final entry in PjskGenerator.groupMembers.entries) {
+      if (entry.value.contains(character)) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
 }

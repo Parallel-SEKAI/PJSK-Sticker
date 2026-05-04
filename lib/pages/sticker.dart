@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,10 +13,12 @@ import 'package:pjsk_sticker/font_manager.dart';
 import 'package:pjsk_sticker/l10n/app_localizations.dart';
 import 'package:pjsk_sticker/pages/settings.dart';
 import 'package:pjsk_sticker/sticker.dart';
+import 'package:pjsk_sticker/sticker_config_archive.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 part 'sticker/sticker_page_config.dart';
+part 'sticker/sticker_page_config_zip.dart';
 part 'sticker/sticker_page_logic.dart';
 part 'sticker/sticker_page_layers.dart';
 part 'sticker/sticker_page_picker.dart';
@@ -115,11 +118,11 @@ class _StickerPageState extends State<StickerPage> {
               onPressed: _showResetDialog,
               tooltip: S.of(context).reset,
             ),
-            // IconButton(
-            //   icon: const Icon(Icons.share),
-            //   onPressed: _exportImportConfig,
-            //   tooltip: "分享配置",
-            // ),
+            IconButton(
+              icon: const Icon(Icons.share),
+              onPressed: _showConfigManagementDialog,
+              tooltip: S.of(context).configManagement,
+            ),
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () async {

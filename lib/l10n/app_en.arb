@@ -121,5 +121,18 @@
   "customBackgroundHint": "Select an image from gallery as background",
   "clearCustomBackground": "Clear Custom Background",
   "invalidImageFormat": "Unsupported image format. Only PNG, JPEG, GIF, and WebP are supported.",
-  "fileTooLarge": "File too large. Please select an image smaller than 5MB."
+  "fileTooLarge": "File too large. Please select an image smaller than 5MB.",
+
+  "exportConfigZip": "Export Config Pack",
+  "importConfigZip": "Import Config Pack",
+  "exportConfigZipHint": "Export current sticker config as .pjsksticker.zip file",
+  "importConfigZipHint": "Import sticker config from .pjsksticker.zip file",
+  "exportSuccess": "Export successful",
+  "importSuccess": "Import successful",
+  "exportFailed": "Export failed: {error}",
+  "importFailed": "Import failed: {error}",
+  "stickerName": "Sticker Name",
+  "enterStickerName": "Please enter sticker name",
+  "stickerNameHint": "e.g., My Sticker",
+  "configManagement": "Config Management"
 }

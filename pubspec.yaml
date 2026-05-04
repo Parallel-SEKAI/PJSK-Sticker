@@ -27,6 +27,8 @@ dependencies:
   url_launcher: ^6.3.2
   flutter_markdown_plus: ^1.0.7
   image_picker: ^1.1.2
+  file_picker: ^8.1.6
+  archive: ^3.6.1
 
 dev_dependencies:
   flutter_test:
