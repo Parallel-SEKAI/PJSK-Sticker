@@ -171,5 +171,28 @@
   "customBackgroundHint": "从相册选择图片作为底图",
   "clearCustomBackground": "清除自定义底图",
   "invalidImageFormat": "不支持的图片格式,仅支持 PNG、JPEG、GIF 和 WebP",
-  "fileTooLarge": "文件过大，请选择小于 5MB 的图片"
+  "fileTooLarge": "文件过大,请选择小于 5MB 的图片",
+
+  "exportConfigZip": "导出配置包",
+  "importConfigZip": "导入配置包",
+  "exportConfigZipHint": "将当前贴纸配置导出为 .pjsksticker.zip 文件",
+  "importConfigZipHint": "从 .pjsksticker.zip 文件导入贴纸配置",
+  "exportSuccess": "导出成功",
+  "importSuccess": "导入成功",
+  "exportFailed": "导出失败: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "importFailed": "导入失败: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "stickerName": "贴纸名称",
+  "enterStickerName": "请输入贴纸名称",
+  "stickerNameHint": "例如: 我的表情包",
+  "configManagement": "配置管理"
 }

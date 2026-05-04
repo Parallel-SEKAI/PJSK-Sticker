@@ -121,5 +121,18 @@
   "customBackgroundHint": "從相簿選擇圖片作為背景",
   "clearCustomBackground": "清除自訂背景",
   "invalidImageFormat": "不支援的圖片格式，僅支援 PNG、JPEG、GIF 和 WebP",
-  "fileTooLarge": "檔案過大，請選擇小於 5MB 的圖片"
+  "fileTooLarge": "檔案過大，請選擇小於 5MB 的圖片",
+
+  "exportConfigZip": "匯出設定包",
+  "importConfigZip": "匯入設定包",
+  "exportConfigZipHint": "將目前貼圖設定匯出為 .pjsksticker.zip 檔案",
+  "importConfigZipHint": "從 .pjsksticker.zip 檔案匯入貼圖設定",
+  "exportSuccess": "匯出成功",
+  "importSuccess": "匯入成功",
+  "exportFailed": "匯出失敗: {error}",
+  "importFailed": "匯入失敗: {error}",
+  "stickerName": "貼圖名稱",
+  "enterStickerName": "請輸入貼圖名稱",
+  "stickerNameHint": "例如: 我的表情包",
+  "configManagement": "設定管理"
 }

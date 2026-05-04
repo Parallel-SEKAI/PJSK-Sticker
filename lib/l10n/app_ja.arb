@@ -121,5 +121,18 @@
   "customBackgroundHint": "ギャラリーから画像を選択",
   "clearCustomBackground": "カスタム背景をクリア",
   "invalidImageFormat": "対応していない画像形式です。PNG、JPEG、GIF、WebP のみ対応しています。",
-  "fileTooLarge": "ファイルが大きすぎます。5MB 以下の画像を選択してください。"
+  "fileTooLarge": "ファイルが大きすぎます。5MB 以下の画像を選択してください。",
+
+  "exportConfigZip": "設定パックをエクスポート",
+  "importConfigZip": "設定パックをインポート",
+  "exportConfigZipHint": "現在のスタンプ設定を .pjsksticker.zip ファイルとしてエクスポート",
+  "importConfigZipHint": ".pjsksticker.zip ファイルからスタンプ設定をインポート",
+  "exportSuccess": "エクスポート成功",
+  "importSuccess": "インポート成功",
+  "exportFailed": "エクスポート失敗: {error}",
+  "importFailed": "インポート失敗: {error}",
+  "stickerName": "スタンプ名",
+  "enterStickerName": "スタンプ名を入力してください",
+  "stickerNameHint": "例: マイスタンプ",
+  "configManagement": "設定管理"
 }

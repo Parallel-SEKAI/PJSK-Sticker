@@ -1,0 +1,253 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/Parallel-SEKAI/PJSK-Sticker/main/schemas/pjsk-sticker-v1.schema.json",
+  "title": "PJSK Sticker Configuration",
+  "description": "Schema for sticker.json in PJSK Sticker Pack archives",
+  "type": "object",
+  "required": ["$schema", "version", "data"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference URL"
+    },
+    "version": {
+      "type": "string",
+      "description": "Format version (e.g., '1.0.0')",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "data": {
+      "type": "object",
+      "required": ["characterId", "background", "layers"],
+      "additionalProperties": false,
+      "properties": {
+        "characterId": {
+          "type": "string",
+          "description": "Character identifier for default colors and sticker association",
+          "enum": [
+            "airi",
+            "akito",
+            "an",
+            "emu",
+            "ena",
+            "haruka",
+            "honami",
+            "ichika",
+            "kaito",
+            "kanade",
+            "kohane",
+            "len",
+            "luka",
+            "mafuyu",
+            "meiko",
+            "miku",
+            "minori",
+            "mizuki",
+            "nene",
+            "rin",
+            "rui",
+            "saki",
+            "shiho",
+            "shizuku",
+            "touya",
+            "tsukasa"
+          ]
+        },
+        "background": {
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Built-in character asset background",
+              "required": ["type", "characterId", "imageId"],
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "asset"
+                },
+                "characterId": {
+                  "type": "string",
+                  "description": "Character identifier",
+                  "enum": [
+                    "airi",
+                    "akito",
+                    "an",
+                    "emu",
+                    "ena",
+                    "haruka",
+                    "honami",
+                    "ichika",
+                    "kaito",
+                    "kanade",
+                    "kohane",
+                    "len",
+                    "luka",
+                    "mafuyu",
+                    "meiko",
+                    "miku",
+                    "minori",
+                    "mizuki",
+                    "nene",
+                    "rin",
+                    "rui",
+                    "saki",
+                    "shiho",
+                    "shizuku",
+                    "touya",
+                    "tsukasa"
+                  ]
+                },
+                "imageId": {
+                  "type": "integer",
+                  "description": "Image number for the character",
+                  "minimum": 1
+                }
+              }
+            },
+            {
+              "type": "object",
+              "description": "Custom background image",
+              "required": ["type", "file"],
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "custom"
+                },
+                "file": {
+                  "type": "string",
+                  "description": "Filename of custom background (relative to sticker directory, no path traversal)",
+                  "pattern": "^[^/\\\\:]+\\.(png|jpg|jpeg|webp)$"
+                }
+              }
+            }
+          ]
+        },
+        "layers": {
+          "type": "array",
+          "description": "Text layers to overlay on the background",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "content",
+              "position",
+              "rotation",
+              "fontSize",
+              "strokeWidth",
+              "fontIndex",
+              "color",
+              "opacity",
+              "visible",
+              "locked",
+              "bend"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique layer identifier"
+              },
+              "content": {
+                "type": "string",
+                "description": "Text content of the layer"
+              },
+              "position": {
+                "type": "object",
+                "description": "Layer position in pixels",
+                "required": ["x", "y"],
+                "additionalProperties": false,
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "description": "Horizontal position"
+                  },
+                  "y": {
+                    "type": "number",
+                    "description": "Vertical position"
+                  }
+                }
+              },
+              "rotation": {
+                "type": "number",
+                "description": "Rotation angle in degrees"
+              },
+              "fontSize": {
+                "type": "number",
+                "description": "Font size in points",
+                "minimum": 0
+              },
+              "strokeWidth": {
+                "type": "integer",
+                "description": "Text stroke/outline width in pixels",
+                "minimum": 0
+              },
+              "fontIndex": {
+                "type": "integer",
+                "description": "Index of the font in the font list",
+                "minimum": 0
+              },
+              "color": {
+                "type": "object",
+                "description": "Text color configuration",
+                "required": ["custom"],
+                "additionalProperties": false,
+                "properties": {
+                  "custom": {
+                    "type": "boolean",
+                    "description": "Whether to use custom color (true) or character default color (false)"
+                  },
+                  "value": {
+                    "type": "string",
+                    "description": "Hex color value (required if custom is true)",
+                    "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "custom": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "required": ["value"]
+                }
+              },
+              "opacity": {
+                "type": "number",
+                "description": "Layer opacity (0.0 = transparent, 1.0 = opaque)",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "visible": {
+                "type": "boolean",
+                "description": "Whether the layer is visible"
+              },
+              "locked": {
+                "type": "boolean",
+                "description": "Whether the layer is locked for editing"
+              },
+              "bend": {
+                "type": "object",
+                "description": "Text bending/curve configuration",
+                "required": ["curvature", "spacing"],
+                "additionalProperties": false,
+                "properties": {
+                  "curvature": {
+                    "type": "number",
+                    "description": "Curve curvature value (0 = no curve)"
+                  },
+                  "spacing": {
+                    "type": "number",
+                    "description": "Character spacing for curved text"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

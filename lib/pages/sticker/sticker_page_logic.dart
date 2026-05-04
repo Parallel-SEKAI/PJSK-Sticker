@@ -169,26 +169,6 @@ extension _StickerPageLogic on _StickerPageState {
   }
 
   // --- 6. 辅助方法 ---
-  String? _findGroupForCharacter(String? character) {
-    if (character == null) return null;
-    for (var entry in PjskGenerator.groupMembers.entries) {
-      if (entry.value.contains(character)) return entry.key;
-    }
-    String? display;
-    try {
-      display =
-          PjskGenerator.characterMap.entries
-              .firstWhere((e) => e.value == character)
-              .key;
-    } catch (_) {}
-    if (display != null) {
-      for (var entry in PjskGenerator.groupMembers.entries) {
-        if (entry.value.contains(display)) return entry.key;
-      }
-    }
-    return null;
-  }
-
   Color _getThemeColor() {
     // 使用自定义底图时，采用系统动态取色（Material You）
     if (_customBgPath != null) {

@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/Parallel-SEKAI/PJSK-Sticker/main/schemas/pjsk-sticker-pack-v1.schema.json",
+  "title": "PJSK Sticker Pack Metadata",
+  "description": "Schema for metadata.json in PJSK Sticker Pack archives",
+  "type": "object",
+  "required": ["$schema", "version", "data"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference URL"
+    },
+    "version": {
+      "type": "string",
+      "description": "Format version (e.g., '1.0.0')",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "data": {
+      "type": "object",
+      "required": ["packName", "stickers"],
+      "additionalProperties": false,
+      "properties": {
+        "packName": {
+          "type": "string",
+          "description": "Name of the sticker pack",
+          "minLength": 1
+        },
+        "stickers": {
+          "type": "array",
+          "description": "List of stickers in this pack",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique sticker identifier (used for folder naming)",
+                "minLength": 1
+              },
+              "name": {
+                "type": ["string", "null"],
+                "description": "Human-readable sticker name (optional)"
+              },
+              "path": {
+                "type": "string",
+                "description": "Optional custom path to sticker directory (relative to stickers/)"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
