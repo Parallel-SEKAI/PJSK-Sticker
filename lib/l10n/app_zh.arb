@@ -194,5 +194,41 @@
   "stickerName": "贴纸名称",
   "enterStickerName": "请输入贴纸名称",
   "stickerNameHint": "例如: 我的表情包",
-  "configManagement": "配置管理"
+  "configManagement": "配置管理",
+
+  "selectFromLocal": "从本地选择",
+  "selectFontFile": "选择字体文件",
+  "fontAddSuccess": "字体 \"{name}\" 添加成功",
+  "@fontAddSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "fontFormatInvalid": "不支持的字体格式,仅支持 .ttf 和 .otf",
+  "fontFileTooLarge": "字体文件较大（{size}MB）,复制可能需要一些时间,是否继续？",
+  "@fontFileTooLarge": {
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "fontFileReadFailed": "文件读取失败: {error}",
+  "@fontFileReadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "fontRegisterFailed": "字体注册失败,文件可能已损坏",
+  "fontAlreadyExists": "字体 \"{name}\" 已存在,是否覆盖？",
+  "@fontAlreadyExists": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "overwrite": "覆盖",
+  "addingFont": "正在添加字体...",
+  "fromNetwork": "从网络下载",
+  "fromLocal": "从本地选择",
+  "fontFileTooLargeHint": "大型字体文件可能需要较长时间复制。",
+  "continueButton": "继续",
+  "multipleFilesSelected": "请一次只选择一个字体文件"
 }

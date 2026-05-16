@@ -134,5 +134,21 @@
   "stickerName": "スタンプ名",
   "enterStickerName": "スタンプ名を入力してください",
   "stickerNameHint": "例: マイスタンプ",
-  "configManagement": "設定管理"
+  "configManagement": "設定管理",
+
+  "selectFromLocal": "ローカルから選択",
+  "selectFontFile": "フォントファイルを選択",
+  "fontAddSuccess": "フォント「{name}」を追加しました",
+  "fontFormatInvalid": "対応していないフォント形式です。.ttf と .otf のみ対応しています",
+  "fontFileTooLarge": "フォントファイルが大きいです（{size}MB）。コピーに時間がかかる可能性があります。続行しますか？",
+  "fontFileReadFailed": "ファイルの読み込みに失敗しました: {error}",
+  "fontRegisterFailed": "フォントの登録に失敗しました。ファイルが破損している可能性があります",
+  "fontAlreadyExists": "フォント「{name}」は既に存在します。上書きしますか？",
+  "overwrite": "上書き",
+  "addingFont": "フォントを追加中...",
+  "fromNetwork": "ネットワークから",
+  "fromLocal": "ローカルから",
+  "fontFileTooLargeHint": "大きなフォントファイルはコピーに時間がかかる場合があります。",
+  "continueButton": "続ける",
+  "multipleFilesSelected": "フォントファイルは1つだけ選択してください"
 }

@@ -134,5 +134,21 @@
   "stickerName": "Sticker Name",
   "enterStickerName": "Please enter sticker name",
   "stickerNameHint": "e.g., My Sticker",
-  "configManagement": "Config Management"
+  "configManagement": "Config Management",
+
+  "selectFromLocal": "Select from Local",
+  "selectFontFile": "Select Font File",
+  "fontAddSuccess": "Font \"{name}\" added successfully",
+  "fontFormatInvalid": "Unsupported font format. Only .ttf and .otf are supported",
+  "fontFileTooLarge": "Font file is large ({size}MB), copying may take some time. Continue?",
+  "fontFileReadFailed": "Failed to read file: {error}",
+  "fontRegisterFailed": "Font registration failed, file may be corrupted",
+  "fontAlreadyExists": "Font \"{name}\" already exists. Overwrite?",
+  "overwrite": "Overwrite",
+  "addingFont": "Adding font...",
+  "fromNetwork": "From Network",
+  "fromLocal": "From Local",
+  "fontFileTooLargeHint": "Large font files may take some time to copy.",
+  "continueButton": "Continue",
+  "multipleFilesSelected": "Please select only one font file at a time"
 }

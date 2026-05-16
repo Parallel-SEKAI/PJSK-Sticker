@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -62,15 +63,17 @@ class FontManager {
       }
     }
     // 验证本地文件是否存在且格式有效
+    bool changed = false;
     for (var font in _fonts) {
       if (font.filePath != null) {
         final file = File(font.filePath!);
         if (!file.existsSync()) {
           font.filePath = null;
+          changed = true;
         } else {
           try {
             final head = await file.openRead(0, 4).first;
-            if (!_isValidFontHeader(head)) {
+            if (!isValidFontHeader(head)) {
               if (kDebugMode) {
                 print(
                   '[FontManager] init: ${font.name} is not a valid TTF/OTF, removing',
@@ -78,14 +81,19 @@ class FontManager {
               }
               await file.delete();
               font.filePath = null;
+              changed = true;
             }
           } catch (_) {
             font.filePath = null;
+            changed = true;
           }
         }
       }
     }
-    await _saveFontList();
+    // 只有在列表发生变化时才写入，避免不必要的 SharedPreferences 写入
+    if (changed) {
+      await _saveFontList();
+    }
 
     // 启动时注册所有已下载字体到 Flutter 引擎
     for (var font in _fonts) {
@@ -97,7 +105,7 @@ class FontManager {
 
   Future<Directory> _getFontDir() async {
     final dir = await getApplicationDocumentsDirectory();
-    final fontDir = Directory('${dir.path}/fonts');
+    final fontDir = Directory(p.join(dir.path, 'fonts'));
     if (!fontDir.existsSync()) {
       fontDir.createSync(recursive: true);
     }
@@ -106,7 +114,7 @@ class FontManager {
 
   static const _supportedExts = ['.ttf', '.otf'];
 
-  static bool _isValidFontHeader(List<int> head) {
+  static bool isValidFontHeader(List<int> head) {
     if (head.length < 4) return false;
     final isTtf =
         (head[0] == 0x00 &&
@@ -150,12 +158,12 @@ class FontManager {
     }
 
     final bytes = response.bodyBytes;
-    if (!_isValidFontHeader(bytes)) {
+    if (!isValidFontHeader(bytes)) {
       throw Exception('Invalid font file (not TTF/OTF, possibly woff/woff2)');
     }
 
     final fontDir = await _getFontDir();
-    final file = File('${fontDir.path}/$name$ext');
+    final file = File(p.join(fontDir.path, '$name$ext'));
     await file.writeAsBytes(bytes);
 
     final existing = _fonts.indexWhere((f) => f.name == name);
@@ -184,6 +192,80 @@ class FontManager {
     _fonts.removeAt(index);
     _registeredFonts.remove(name);
     await _saveFontList();
+  }
+
+  /// 从本地文件添加字体
+  ///
+  /// 参数:
+  /// - [name]: 字体名称
+  /// - [sourcePath]: 源文件路径
+  /// - [overwrite]: 是否覆盖同名字体(默认 false)
+  ///
+  /// 返回值:
+  /// - true: 添加成功
+  /// - false: 字体名称已存在且 overwrite=false
+  ///
+  /// 抛出异常:
+  /// - Exception: 文件不存在、格式无效等
+  Future<bool> addLocalFont({
+    required String name,
+    required String sourcePath,
+    bool overwrite = false,
+  }) async {
+    // 1. 检查名称是否已存在
+    final existing = _fonts.indexWhere((f) => f.name == name);
+    if (existing != -1 && !overwrite) {
+      return false;
+    }
+
+    // 2. 验证源文件
+    final sourceFile = File(sourcePath);
+    if (!sourceFile.existsSync()) {
+      throw Exception('File not found: $sourcePath');
+    }
+
+    // 3. 读取并验证文件格式
+    final head = await sourceFile.openRead(0, 4).first;
+    if (!isValidFontHeader(head)) {
+      throw Exception('Invalid font file (not TTF/OTF)');
+    }
+
+    // 4. 确定扩展名
+    String ext = sourcePath.toLowerCase().endsWith('.otf') ? '.otf' : '.ttf';
+
+    // 5. 复制到应用目录
+    final fontDir = await _getFontDir();
+    final targetFile = File(p.join(fontDir.path, '$name$ext'));
+
+    // 如果覆盖,先删除旧文件
+    if (existing != -1 && _fonts[existing].filePath != null) {
+      final oldFile = File(_fonts[existing].filePath!);
+      if (oldFile.existsSync()) {
+        await oldFile.delete();
+      }
+    }
+
+    await sourceFile.copy(targetFile.path);
+
+    // 6. 更新列表
+    final fontInfo = FontInfo(
+      name: name,
+      url: 'local://${p.basename(sourcePath)}',
+      filePath: targetFile.path,
+    );
+
+    if (existing != -1) {
+      _fonts[existing] = fontInfo;
+    } else {
+      _fonts.add(fontInfo);
+    }
+
+    // 7. 注册字体
+    _registeredFonts.remove(name);
+    await registerFont(name);
+    await _saveFontList();
+
+    return true;
   }
 
   Future<Uint8List?> loadFontBytes(String name) async {
@@ -216,9 +298,8 @@ class FontManager {
       return;
     }
     try {
-      final clean = Uint8List.fromList(bytes);
       final loader = FontLoader(name)
-        ..addFont(Future.value(ByteData.view(clean.buffer)));
+        ..addFont(Future.value(ByteData.view(bytes.buffer)));
       await loader.load();
       _registeredFonts.add(name);
     } catch (e) {

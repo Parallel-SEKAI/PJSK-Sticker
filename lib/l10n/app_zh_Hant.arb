@@ -134,5 +134,41 @@
   "stickerName": "貼圖名稱",
   "enterStickerName": "請輸入貼圖名稱",
   "stickerNameHint": "例如: 我的表情包",
-  "configManagement": "設定管理"
+  "configManagement": "設定管理",
+
+  "selectFromLocal": "從本機選擇",
+  "selectFontFile": "選擇字型檔案",
+  "fontAddSuccess": "字型「{name}」新增成功",
+  "@fontAddSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "fontFormatInvalid": "不支援的字型格式，僅支援 .ttf 和 .otf",
+  "fontFileTooLarge": "字型檔案較大（{size}MB），複製可能需要一些時間，是否繼續？",
+  "@fontFileTooLarge": {
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "fontFileReadFailed": "檔案讀取失敗: {error}",
+  "@fontFileReadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "fontRegisterFailed": "字型註冊失敗，檔案可能已損壞",
+  "fontAlreadyExists": "字型「{name}」已存在，是否覆蓋？",
+  "@fontAlreadyExists": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "overwrite": "覆蓋",
+  "addingFont": "正在新增字型...",
+  "fromNetwork": "從網路下載",
+  "fromLocal": "從本機選擇",
+  "fontFileTooLargeHint": "大型字型檔案可能需要較長時間複製。",
+  "continueButton": "繼續",
+  "multipleFilesSelected": "請一次只選擇一個字型檔案"
 }
