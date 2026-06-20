@@ -33,7 +33,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.38.1"
 
       # 仅在编译 Linux 时安装必要的系统库
       - name: Install Linux dependencies
