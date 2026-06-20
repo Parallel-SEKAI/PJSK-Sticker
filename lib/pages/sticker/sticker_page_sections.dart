@@ -720,7 +720,7 @@ extension _StickerPageSections on _StickerPageState {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           buildDefaultDragHandles: false,
           itemCount: _layers.length,
-          onReorder: _reorderLayer,
+          onReorderItem: _reorderLayer,
           itemBuilder: (context, index) {
             final layer = _layers[index];
             final isSelected = _currentLayerId == layer.id;

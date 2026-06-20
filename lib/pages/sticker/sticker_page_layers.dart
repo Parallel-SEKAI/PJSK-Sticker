@@ -103,14 +103,13 @@ extension _StickerPageLayers on _StickerPageState {
       return;
     }
 
-    final adjustedNewIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
-    if (oldIndex == adjustedNewIndex) {
+    if (oldIndex == newIndex) {
       return;
     }
 
     _update(() {
       final layer = _layers.removeAt(oldIndex);
-      _layers.insert(adjustedNewIndex, layer);
+      _layers.insert(newIndex, layer);
       _contextController.text = _currentLayer.content;
     });
     _createSticker();
