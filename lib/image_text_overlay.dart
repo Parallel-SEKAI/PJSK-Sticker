@@ -282,7 +282,7 @@ class ImageTextOverlay {
       // 计算当前行的圆心偏移
       final lineCenterY = currentY + lineHeight / 2;
       final lineDelta = lineCenterY - textPainter.height / 2;
-      final lineSignedRadius = signedRadius + lineDelta;
+      final lineSignedRadius = signedRadius - lineDelta;
 
       // 保护最小半径（保持符号）
       final minRadius = 20.0;
